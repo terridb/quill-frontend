@@ -1,1 +1,90 @@
-<!-- Algemene project regels -->
+---
+description: API, data access, and server mutation conventions — Supabase, React Query, route handlers, Server Actions
+globs: "{src/app/api/**,src/app/**/route.ts,src/lib/**,src/hooks/**,src/types/**}"
+alwaysApply: false
+---
+
+# API & data access
+
+Conventions for server endpoints, Supabase access, and client data fetching in Pagefolk.
+
+## Layer responsibilities
+
+| Layer | Location | Role |
+|-------|----------|------|
+| Data access | `src/lib/` | Supabase queries, AI agent logic, shared server utilities |
+| HTTP / streaming | `src/app/api/**/route.ts` | Route Handlers (AI chat, webhooks, non-Supabase APIs) |
+| Mutations from UI | `src/app/**/actions.ts` or co-located `"use server"` files | Server Actions for form submits and simple mutations |
+| Client fetching | `src/hooks/` | React Query hooks (`useQuery`, `useMutation`) — the only way UI reads/writes data |
+| Shapes | `src/types/` | Shared row types, API response types, Zod-inferred types |
+
+UI components never call Supabase or `fetch` directly. They use hooks from `src/hooks/`.
+
+## When to use what
+
+- **Supabase + RLS (default)** — reads and CRUD that map to Postgres tables. Query in `src/lib/`, expose via React Query hooks. No custom REST layer unless required.
+- **Route Handler** — streaming AI responses, third-party webhooks, or endpoints that cannot be expressed as Supabase queries.
+- **Server Action** — mutations triggered from forms or client components where a dedicated API route adds no value. Still validate input and check auth inside the action.
+
+Prefer Supabase direct access over wrapping it in a Route Handler.
+
+## Supabase clients
+
+- Use `@supabase/ssr` — never the bare `createClient` from `@supabase/supabase-js` in app code.
+- **`src/lib/supabase/server.ts`** — `createServerClient` for Server Components, Route Handlers, and Server Actions (`cookies()` from `next/headers`).
+- **`src/lib/supabase/client.ts`** — `createBrowserClient` for client-side auth/session only; data fetching goes through React Query hooks, not ad-hoc client queries in components.
+- **`src/lib/supabase/middleware.ts`** — session refresh in `middleware.ts`.
+- **Anon key only in client code.** `SUPABASE_SERVICE_ROLE_KEY` is server-only (scripts, admin tasks) — never import it in client bundles or `NEXT_PUBLIC_` env vars.
+- Assume **RLS is enabled** on every table. Do not bypass RLS from user-facing code.
+
+## Data access (`src/lib/`)
+
+- One focused function per operation (e.g. `getBooksForUser`, `updateReadingProgress`).
+- Return typed data or throw; map Supabase errors to meaningful messages at this layer.
+- Use `React.cache()` for per-request deduplication of identical server reads (e.g. `getCurrentUser`).
+- Select only columns the caller needs — avoid `select('*')` when a subset suffices.
+- Never store request-scoped data (user, session) in module-level variables.
+
+## React Query (`src/hooks/`)
+
+- **No `useEffect` + `fetch`** for CRUD. Use `useQuery` / `useMutation` / `useQueryClient`.
+- Colocate hooks by domain: `use-books.ts`, `use-reading-sessions.ts`.
+- Define query keys in a factory (e.g. `bookKeys.list()`, `bookKeys.detail(id)`) — reuse keys for queries and invalidation.
+- Call `src/lib/` functions inside `queryFn` / `mutationFn`; keep hooks thin.
+- On mutation success, `invalidateQueries` for affected keys (or optimistic updates when UX demands it).
+- Use `makeQueryClient()` from `src/lib/query-client.ts` defaults unless a query needs explicit `staleTime` / `gcTime`.
+
+## Validation & errors
+
+- **Zod at every boundary** — Route Handler bodies, Server Action args, and tool inputs for the AI agent. Parse with `.safeParse()`; return `400` with a clear message on failure.
+- Define schemas once; export inferred types to `src/types/` when shared.
+- Route Handlers: return `Response.json({ error: '...' }, { status })` — use 401/403 for auth, 404 for missing resources, 500 only for unexpected failures.
+- Server Actions: return `{ error: string }` or `throw` for unexpected errors; never leak stack traces or internal details to the client.
+- Log unexpected errors server-side; return generic messages to the client.
+
+## Auth
+
+- **Authenticate inside every mutation** — Route Handlers and Server Actions are public endpoints. Call `supabase.auth.getUser()` (or equivalent) in each handler/action; do not rely only on middleware or layout guards.
+- Authorize after authenticate — verify the user owns or may access the resource (RLS is the backstop; explicit checks belong in `src/lib/` when logic is non-trivial).
+- Never use `user_metadata` / JWT `user_metadata` for authorization — use `app_metadata` or database roles/policies.
+
+## Route Handlers
+
+- File: `src/app/api/<resource>/route.ts` — export named HTTP method functions (`GET`, `POST`, etc.).
+- Validate method and content-type before parsing the body.
+- Start independent async work in parallel (`Promise.all` or promise-first pattern) — avoid sequential waterfalls.
+- For AI chat: use Vercel AI SDK (`streamText`, tools) in the handler; keep tool implementations and prompts in `src/lib/`. Stream responses; do not buffer full completions in memory for large outputs.
+- `OPENAI_API_KEY` and other secrets stay server-only — never expose in client code or `NEXT_PUBLIC_` vars.
+
+## Server Actions
+
+- Top of file or function: `"use server"`.
+- Accept serializable input only; validate with Zod immediately.
+- Revalidate paths or tags (`revalidatePath` / `revalidateTag`) after mutations that affect Server Component data.
+- Use `after()` from `next/server` for non-blocking side effects (logging, analytics) that must not delay the response.
+
+## Types
+
+- Mirror Supabase table shapes in `src/types/` (or generate with Supabase CLI when available).
+- Prefer `Tables<'books'>` from generated types over hand-rolled duplicates.
+- API response types for Route Handlers live next to the handler or in `src/types/` when shared.

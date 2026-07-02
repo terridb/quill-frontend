@@ -1,1 +1,56 @@
-<!-- API//Supabase config -->
+---
+description: Core conventions for Pagefolk - Next.js reading tracker
+globs: "**/*"
+alwaysApply: true
+---
+
+# Pagefolk
+
+Reading tracker built with Next.js App Router, TypeScript, Tailwind CSS, Supabase (`@supabase/ssr`, RLS), React Query, and Vercel AI SDK (tool calling + streaming). Package manager: **pnpm**. All code, comments, and UI text in **English**.
+
+## Folder structure
+
+```
+src/
+  app/          # Routes, layouts, pages, route handlers, Server Actions
+  components/   # UI components (Server by default; Client when needed)
+  hooks/        # Custom React hooks (UI state, browser APIs, React Query, etc.)
+  lib/          # Supabase clients, query client, shared utilities
+  providers/    # Client providers (QueryProvider, etc.)
+  types/        # Shared TypeScript types
+```
+
+- Put new code in the matching folder; do not invent parallel structures.
+- Use `@/` path aliases for imports within `src/`.
+
+## Next.js & React
+
+- **App Router only** — no Pages Router (`pages/`, `getServerSideProps`, `getStaticProps`).
+- **Server Components by default** — add `'use client'` only for interactivity, state, effects, or browser APIs.
+- **React Query for all CRUD and client data fetching** — no ad-hoc `useEffect` + `fetch`. Put query/mutation hooks in `src/hooks/`.
+- **`src/hooks/`** is for any reusable client hook — not only React Query (e.g. form state, media queries, keyboard shortcuts).
+- **Vercel AI SDK** for the AI agent — streaming responses, tool calling; keep agent logic in `src/lib/` or route handlers.
+
+## TypeScript
+
+- Strict mode; no `any` without a brief inline justification.
+- Prefer explicit types for props, API responses, and Supabase row shapes.
+- Validate external input with Zod at boundaries.
+
+## Supabase
+
+- Use `@supabase/ssr` for server and browser clients.
+- Assume **RLS is enabled** — never bypass with service-role keys in client code.
+- Data access in `src/lib/`; expose to UI via React Query hooks in `src/hooks/`.
+
+## Code quality
+
+- Small, focused functions and components; meaningful names.
+- Clear separation: server logic (`app/`, Server Actions), client UI (`components/`), client hooks (`hooks/`), utilities and data access (`lib/`).
+- Tailwind for styling; follow `styles.mdc`.
+
+## Git workflow
+
+- **Conventional commits**: `feat:`, `fix:`, `chore:`, `refactor:` (etc.).
+- **Conventional branch prefixes**: `feat/`, `fix/`, `chore/`, `refactor/` — only create a branch when asked.
+- **Pull requests** — only create when asked; never push or open PRs unprompted.

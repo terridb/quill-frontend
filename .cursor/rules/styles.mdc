@@ -1,0 +1,20 @@
+---
+description: Tailwind CSS styling conventions — utility-first, mobile-first, className over inline styles
+globs: "**/*.{tsx,jsx,css}"
+alwaysApply: false
+---
+
+# Styling
+
+Tailwind CSS is **utility-first**. Style with `className`, not inline `style` props.
+
+## Core rules
+
+- **Use Tailwind utilities** for layout, spacing, typography, colors, borders, and responsive behavior.
+- **No inline styles** (`style={{ ... }}`) unless a value is truly dynamic at runtime (e.g. drag position, chart coordinates). Prefer Tailwind classes or CSS variables for everything else.
+- **No custom CSS** unless absolutely necessary — e.g. third-party overrides, complex animations Tailwind cannot express, or global base styles in `src/app/globals.css`.
+- **Mobile first** — write base classes for small screens; add breakpoint prefixes (`sm:`, `md:`, `lg:`, `xl:`) to enhance at larger widths.
+
+
+## Composition
+- Extract repeated class strings into a component or constant when the same pattern appears in multiple places — do not create one-off CSS files for reuse.

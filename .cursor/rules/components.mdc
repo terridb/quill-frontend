@@ -1,1 +1,33 @@
-<!-- Component conventies -->
+---
+description: React component conventions — functional components, typed props, named exports
+globs: "**/*.{tsx,jsx}"
+alwaysApply: false
+---
+
+# Components
+
+Conventions for React components in `src/components/`, `src/providers/`, and reusable UI.
+
+## Core rules
+
+- **Functional components only** — no class components.
+- **PascalCase** for component names and file names (e.g. `BookCard.tsx` exports `BookCard`).
+- **Named exports** — `export function BookCard`, not `export default`.
+- **Props interface above the component** — name it `{ComponentName}Props`.
+
+## Server vs client
+
+- **Server Components by default** — no `'use client'` unless the component needs interactivity, state, effects, or browser APIs.
+- Add `'use client'` as the first line when required.
+
+
+## Next.js route files
+
+`src/app/**/page.tsx`, `layout.tsx`, `loading.tsx`, `error.tsx`, and `not-found.tsx` **must** use default exports per Next.js. Apply these conventions to the component body and props typing; the default export is the only exception.
+
+
+## Organization
+
+- One primary component per file; co-locate small helpers used only by that component.
+- Put reusable components in `src/components/`; app-wide providers in `src/providers/`.
+- Import with `@/` path aliases.
