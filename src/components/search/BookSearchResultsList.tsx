@@ -4,6 +4,7 @@ import { BookSearchResultItem } from "@/src/components/search/BookSearchResultIt
 import { EmptyState } from "@/src/components/ui/EmptyState";
 import { ErrorState } from "@/src/components/ui/ErrorState";
 import { LoadingState } from "@/src/components/ui/LoadingState";
+import { useBookSearch } from "@/src/hooks/use-book-search";
 import { useSearch } from "@/src/providers/search-provider";
 
 export interface BookSearchResultsListProps {
@@ -13,8 +14,9 @@ export interface BookSearchResultsListProps {
 export function BookSearchResultsList({
   className = "",
 }: BookSearchResultsListProps) {
-  const { query, searchQuery } = useSearch();
-  const { data, isPending, isError, refetch, isFetching } = searchQuery;
+  const { query, debouncedQuery } = useSearch();
+  const { data, isPending, isError, refetch, isFetching } =
+    useBookSearch(debouncedQuery);
 
   if (query.length < 2) {
     return (
