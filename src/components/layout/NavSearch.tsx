@@ -1,7 +1,7 @@
 "use client";
 
 import { usePathname } from "next/navigation";
-import { useEffect, useId, useRef, useState } from "react";
+import { useCallback, useEffect, useId, useRef, useState } from "react";
 import { BookSearchPanel } from "@/src/components/layout/BookSearchPanel";
 import { SearchInput } from "@/src/components/ui/SearchInput";
 import { useSearch } from "@/src/providers/search-provider";
@@ -17,6 +17,10 @@ export function NavSearch() {
   useEffect(() => {
     setIsPanelOpen(false);
   }, [pathname]);
+
+  const closePanel = useCallback(() => {
+    setIsPanelOpen(false);
+  }, []);
 
   const handleChange = (value: string) => {
     setQuery(value);
@@ -37,7 +41,7 @@ export function NavSearch() {
       <BookSearchPanel
         panelId={panelId}
         isOpen={isPanelOpen}
-        onClose={() => setIsPanelOpen(false)}
+        onClose={closePanel}
         containerRef={containerRef}
       />
     </div>
