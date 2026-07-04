@@ -13,6 +13,24 @@ export function slugifyBookTitle(title: string): string {
     .replace(/^-|-$/g, "");
 }
 
+/** Matches Open Library work/edition IDs (e.g. OL45804W). */
+const OPEN_LIBRARY_ID_PATTERN = /^(OL\d+[A-Z])(?:-(.+))?$/;
+
+export function parseBookRouteSlug(slug: string): {
+  openLibraryId: string;
+  titleSlug?: string;
+} | null {
+  const match = slug.match(OPEN_LIBRARY_ID_PATTERN);
+  if (!match) {
+    return null;
+  }
+
+  return {
+    openLibraryId: match[1],
+    titleSlug: match[2],
+  };
+}
+
 export function getBookPath(openLibraryId: string, title: string): string {
   const slug = slugifyBookTitle(title);
   return slug
