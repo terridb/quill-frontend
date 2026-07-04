@@ -1,6 +1,7 @@
 "use client";
 
-import { useId, useRef, useState } from "react";
+import { usePathname } from "next/navigation";
+import { useEffect, useId, useRef, useState } from "react";
 import { BookSearchPanel } from "@/src/components/layout/BookSearchPanel";
 import { SearchInput } from "@/src/components/ui/SearchInput";
 import { useSearch } from "@/src/providers/search-provider";
@@ -11,6 +12,11 @@ export function NavSearch() {
   const containerRef = useRef<HTMLDivElement>(null);
   const [isPanelOpen, setIsPanelOpen] = useState(false);
   const { query, setQuery } = useSearch();
+  const pathname = usePathname();
+
+  useEffect(() => {
+    setIsPanelOpen(false);
+  }, [pathname]);
 
   const handleChange = (value: string) => {
     setQuery(value);

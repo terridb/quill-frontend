@@ -1,4 +1,5 @@
 import type { BookSearchResult } from "@/src/types/open-library";
+import { extractOpenLibraryId } from "@/src/lib/openlibrary/book-path";
 import { getCoverUrl } from "@/src/lib/openlibrary/cover-url";
 import { openLibrarySearchResponseSchema } from "@/src/lib/openlibrary/schemas";
 
@@ -30,6 +31,7 @@ export async function searchOpenLibraryBooks(
 
   return parsed.data.docs.map((doc) => ({
     id: doc.key,
+    openLibraryId: extractOpenLibraryId(doc.key),
     title: doc.title ?? "Untitled",
     authors: doc.author_name?.join(", ") ?? "Unknown author",
     coverUrl: getCoverUrl(doc.cover_i),
