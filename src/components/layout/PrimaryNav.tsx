@@ -8,7 +8,7 @@ export function PrimaryNav() {
       <div className="md:hidden">
         <MobileNav />
       </div>
-      <div className="mx-auto hidden max-w-5xl items-center gap-8 px-6 py-3.5 md:flex">
+      <div className="mx-auto hidden h-[var(--header-height)] max-w-5xl items-center gap-8 px-6 md:flex">
         <Link
           href="/"
           className="focus-ring text-display shrink-0 text-[1.65rem] leading-none tracking-tight text-[var(--color-ink)]"

@@ -12,9 +12,9 @@ export function SimilarBookCard({ book, className = "" }: SimilarBookCardProps) 
   return (
     <Link
       href={getBookPath(book.openLibraryId, book.title)}
-      className={`group focus-ring block w-[7.5rem] md:w-auto ${className}`}
+      className={`group focus-ring block min-w-0 w-full transition-[transform,box-shadow] duration-200 hover:-translate-y-0.5 ${className}`}
     >
-      <div className="relative mb-2 aspect-[2/3] w-full overflow-hidden rounded-md bg-[var(--color-fill)] shadow-[var(--shadow-cover)] transition-[transform,box-shadow] duration-200 group-hover:-translate-y-0.5 group-hover:shadow-[var(--shadow-md)]">
+      <div className="relative mb-2 aspect-[2/3] w-full overflow-hidden rounded-md bg-[var(--color-fill)] shadow-[var(--shadow-cover)] transition-shadow duration-200 group-hover:shadow-[var(--shadow-md)]">
         {book.coverUrl ? (
           <Image
             src={book.coverUrl}

@@ -15,6 +15,8 @@
   --shadow-lg: 0 12px 40px #1414131a;
   --shadow-cover: 0 2px 4px #14141314, 0 8px 20px #1414131f;
   --header-height: 3.5rem;
+  --header-border-width: 1px;
+  --header-offset: calc(var(--header-height) + var(--header-border-width));
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -32,6 +34,15 @@ body {
   color: var(--color-ink);
   font-family: var(--font-body), system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
+  overflow-x: clip;
+}
+
+button {
+  cursor: pointer;
+}
+
+button:disabled {
+  cursor: not-allowed;
 }
 
 .text-display {
@@ -104,22 +115,28 @@ body {
   padding-top: 2rem;
 }
 
-.similar-books-scroll {
+.similar-books-viewport {
+  overflow: hidden;
+  padding-block: 0.25rem;
+}
+
+.similar-books-track {
   display: flex;
-  gap: 1rem;
-  overflow-x: auto;
-  scroll-snap-type: x mandatory;
-  -ms-overflow-style: none;
-  scrollbar-width: none;
+  transition: transform 300ms ease;
 }
 
-.similar-books-scroll::-webkit-scrollbar {
-  display: none;
-}
-
-.similar-books-scroll > * {
-  scroll-snap-align: start;
+.similar-books-page {
+  display: grid;
+  width: 100%;
   flex-shrink: 0;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.5rem;
+}
+
+@media (min-width: 40rem) {
+  .similar-books-page {
+    gap: 1rem;
+  }
 }
 
 @media (hover: hover) {
@@ -138,9 +155,15 @@ body {
 @media (min-width: 48rem) {
   .book-detail-sidebar {
     position: sticky;
-    top: var(--header-height);
+    top: var(--header-offset);
+    align-self: start;
+    height: fit-content;
     display: flex;
-    height: calc(100dvh - var(--header-height));
     flex-direction: column;
+  }
+
+  .book-detail-page {
+    /* Align grid with sticky top so the sidebar does not drift before sticking. */
+    margin-top: -2.5rem;
   }
 }

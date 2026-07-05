@@ -3,7 +3,7 @@ import { LoadingState } from "@/src/components/ui/LoadingState";
 export default function BookLoading() {
   return (
     <div
-      className="md:-mx-8 md:-my-10 md:grid md:grid-cols-[18rem_1fr] lg:grid-cols-[20rem_1fr]"
+      className="book-detail-page md:-mx-8 md:grid md:grid-cols-[18rem_1fr] lg:grid-cols-[20rem_1fr]"
       aria-busy="true"
       aria-label="Loading book"
     >

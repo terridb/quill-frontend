@@ -15,7 +15,7 @@ export function BookDetailPage({ book }: BookDetailPageProps) {
     "mt-8 w-full border-t border-[var(--color-border)] pt-8";
 
   return (
-    <article className="md:-mx-8 md:-my-10 md:grid md:grid-cols-[18rem_1fr] lg:grid-cols-[20rem_1fr]">
+    <article className="book-detail-page min-w-0 md:-mx-8 md:grid md:items-start md:grid-cols-[18rem_1fr] lg:grid-cols-[20rem_1fr]">
       <aside className="book-detail-sidebar flex flex-col items-center md:items-stretch md:border-r md:border-[var(--color-border)] md:px-6 md:py-10 lg:px-8">
         <BookCover
           coverUrl={book.coverUrl}
@@ -28,7 +28,7 @@ export function BookDetailPage({ book }: BookDetailPageProps) {
         />
       </aside>
 
-      <div className="mt-5 flex w-full flex-col items-center text-center md:mt-0 md:items-start md:px-8 md:py-10 md:text-left">
+      <div className="mt-5 flex w-full min-w-0 flex-col items-center text-center md:mt-0 md:items-start md:px-8 md:py-10 md:text-left">
         <h1 className="text-display text-[1.75rem] leading-[1.15] tracking-tight text-[var(--color-ink)] lg:text-[2.25rem]">
           {book.title}
         </h1>

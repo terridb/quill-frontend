@@ -92,6 +92,7 @@ async function fetchBookDetailUncached(openLibraryId: string): Promise<BookDetai
   const work = workParsed.data;
   const authorKeys =
     work.authors?.map((entry) => entry.author.key) ?? [];
+  const normalizedSubjects = normalizeSubjects(work.subjects);
 
   const [authors, editionsData, relatedBooks] = await Promise.all([
     fetchAuthorNames(authorKeys),
@@ -101,13 +102,10 @@ async function fetchBookDetailUncached(openLibraryId: string): Promise<BookDetai
           return parsed.success ? parsed.data.entries ?? [] : [];
         })
       : Promise.resolve([]),
-    (async () => {
-      const { primarySubjectSlug } = normalizeSubjects(work.subjects);
-      return fetchRelatedBooks(primarySubjectSlug, openLibraryId);
-    })(),
+    fetchRelatedBooks(normalizedSubjects.genreLabels, openLibraryId),
   ]);
 
-  const { genreLabels, subjectTags } = normalizeSubjects(work.subjects);
+  const { genreLabels, subjectTags } = normalizedSubjects;
   const coverId = work.covers?.find((id) => id > 0);
 
   return {
