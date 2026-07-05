@@ -1,0 +1,38 @@
+import type { RelatedBook } from "@/src/types/open-library";
+import { getBookPath } from "@/src/lib/openlibrary/book-path";
+import Image from "next/image";
+import Link from "next/link";
+
+export interface SimilarBookCardProps {
+  book: RelatedBook;
+  className?: string;
+}
+
+export function SimilarBookCard({ book, className = "" }: SimilarBookCardProps) {
+  return (
+    <Link
+      href={getBookPath(book.openLibraryId, book.title)}
+      className={`group focus-ring block w-[7.5rem] md:w-auto ${className}`}
+    >
+      <div className="relative mb-2 aspect-[2/3] w-full overflow-hidden rounded-md bg-[var(--color-fill)] shadow-[var(--shadow-cover)] transition-[transform,box-shadow] duration-200 group-hover:-translate-y-0.5 group-hover:shadow-[var(--shadow-md)]">
+        {book.coverUrl ? (
+          <Image
+            src={book.coverUrl}
+            alt=""
+            fill
+            sizes="(max-width: 768px) 120px, 160px"
+            className="object-cover"
+          />
+        ) : (
+          <div className="flex h-full items-center justify-center px-1 text-center text-[10px] leading-tight text-[var(--color-muted)]">
+            No cover
+          </div>
+        )}
+      </div>
+      <p className="text-display line-clamp-2 text-sm leading-snug text-[var(--color-ink)] transition-colors duration-200 group-hover:text-[var(--color-accent)]">
+        {book.title}
+      </p>
+      <p className="mt-1 truncate text-xs text-[var(--color-muted)]">{book.authors}</p>
+    </Link>
+  );
+}

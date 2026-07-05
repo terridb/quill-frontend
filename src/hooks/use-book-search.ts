@@ -1,12 +1,10 @@
 "use client";
 
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
+import { bookKeys } from "@/src/hooks/book-keys";
 import { fetchBookSearch } from "@/src/lib/openlibrary/fetch-book-search";
 
-export const bookKeys = {
-  all: ["books"] as const,
-  search: (query: string) => [...bookKeys.all, "search", query] as const,
-};
+export { bookKeys };
 
 export function useBookSearch(debouncedQuery: string) {
   return useQuery({
