@@ -4,8 +4,11 @@ import { useEffect, useMemo, useState } from "react";
 import type { RelatedBook } from "@/src/types/open-library";
 import { SimilarBookCard } from "@/src/components/book/SimilarBookCard";
 import { ChevronLeftIcon, ChevronRightIcon } from "@/src/components/ui/icons";
+import { useMediaQuery } from "@/src/hooks/use-media-query";
 
-const VISIBLE_COUNT = 4;
+const MOBILE_VISIBLE_COUNT = 2;
+const DESKTOP_VISIBLE_COUNT = 4;
+const DESKTOP_MEDIA_QUERY = "(min-width: 40rem)";
 
 export interface SimilarBooksCarouselProps {
   books: RelatedBook[];
@@ -22,14 +25,19 @@ function chunkBooks(books: RelatedBook[], size: number): RelatedBook[][] {
 }
 
 export function SimilarBooksCarousel({ books }: SimilarBooksCarouselProps) {
+  const isDesktop = useMediaQuery(DESKTOP_MEDIA_QUERY);
+  const visibleCount = isDesktop ? DESKTOP_VISIBLE_COUNT : MOBILE_VISIBLE_COUNT;
   const [page, setPage] = useState(0);
-  const pages = useMemo(() => chunkBooks(books, VISIBLE_COUNT), [books]);
+  const pages = useMemo(
+    () => chunkBooks(books, visibleCount),
+    [books, visibleCount],
+  );
   const totalPages = pages.length;
   const showControls = totalPages > 1;
 
   useEffect(() => {
     setPage(0);
-  }, [books]);
+  }, [books, visibleCount]);
 
   useEffect(() => {
     if (page > totalPages - 1) {

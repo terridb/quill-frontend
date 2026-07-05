@@ -20,7 +20,7 @@ export function SimilarBookCard({ book, className = "" }: SimilarBookCardProps) 
             src={book.coverUrl}
             alt=""
             fill
-            sizes="(max-width: 768px) 120px, 160px"
+            sizes="(max-width: 640px) 45vw, 160px"
             className="object-cover"
           />
         ) : (
