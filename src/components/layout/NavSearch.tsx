@@ -1,31 +1,19 @@
 "use client";
 
-import { usePathname } from "next/navigation";
-import { useCallback, useEffect, useId, useRef, useState } from "react";
 import { BookSearchPanel } from "@/src/components/layout/BookSearchPanel";
 import { SearchInput } from "@/src/components/ui/SearchInput";
-import { useSearch } from "@/src/providers/search-provider";
+import { useNavSearch } from "@/src/hooks/use-nav-search";
 
 export function NavSearch() {
-  const inputId = useId();
-  const panelId = useId();
-  const containerRef = useRef<HTMLDivElement>(null);
-  const [isPanelOpen, setIsPanelOpen] = useState(false);
-  const { query, setQuery } = useSearch();
-  const pathname = usePathname();
-
-  useEffect(() => {
-    setIsPanelOpen(false);
-  }, [pathname]);
-
-  const closePanel = useCallback(() => {
-    setIsPanelOpen(false);
-  }, []);
-
-  const handleChange = (value: string) => {
-    setQuery(value);
-    setIsPanelOpen(value.length >= 2);
-  };
+  const {
+    query,
+    isPanelOpen,
+    containerRef,
+    handleChange,
+    closePanel,
+    inputId,
+    panelId,
+  } = useNavSearch();
 
   return (
     <div ref={containerRef} className="relative w-full max-w-md" role="search">

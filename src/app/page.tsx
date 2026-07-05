@@ -8,7 +8,7 @@ export default function Home() {
         Find titles and authors, then track what you read.
       </p>
       <p className="text-label mt-8 md:hidden">
-        Tap the search icon below to get started
+        Tap the search icon in the header to get started
       </p>
       <p className="text-label mt-8 hidden md:block">
         Use the search bar above to get started
