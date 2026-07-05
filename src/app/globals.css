@@ -153,6 +153,10 @@ button:disabled {
 }
 
 @media (min-width: 48rem) {
+  main:has(.book-detail-page) {
+    max-width: 64rem;
+  }
+
   .book-detail-sidebar {
     position: sticky;
     top: var(--header-offset);
@@ -165,5 +169,11 @@ button:disabled {
   .book-detail-page {
     /* Align grid with sticky top so the sidebar does not drift before sticking. */
     margin-top: -2.5rem;
+  }
+}
+
+@media (min-width: 64rem) {
+  main:has(.book-detail-page) {
+    max-width: 72rem;
   }
 }

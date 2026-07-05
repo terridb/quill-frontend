@@ -15,7 +15,7 @@ export function BookDetailPage({ book }: BookDetailPageProps) {
     "mt-8 w-full border-t border-[var(--color-border)] pt-8";
 
   return (
-    <article className="book-detail-page min-w-0 md:-mx-8 md:grid md:items-start md:grid-cols-[18rem_1fr] lg:grid-cols-[20rem_1fr]">
+    <article className="book-detail-page min-w-0 md:-mx-8 md:grid md:items-start md:grid-cols-[16rem_minmax(0,1fr)] lg:grid-cols-[18rem_minmax(0,1fr)]">
       <aside className="book-detail-sidebar flex flex-col items-center md:items-stretch md:border-r md:border-[var(--color-border)] md:px-6 md:py-10 lg:px-8">
         <BookCover
           coverUrl={book.coverUrl}
