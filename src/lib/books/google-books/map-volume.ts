@@ -40,7 +40,10 @@ export function mapVolumeToBookDetail(
   authorBooks: RelatedBook[] = [],
 ): BookDetail {
   const { id, volumeInfo } = volume;
-  const { genreLabels, subjectTags } = normalizeCategories(volumeInfo.categories);
+  const { genreLabels, subjectTags } = normalizeCategories(
+    volumeInfo.categories,
+    volumeInfo.mainCategory,
+  );
   const pageCount = volumeInfo.pageCount;
 
   return {

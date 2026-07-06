@@ -1,3 +1,5 @@
+import type { BookKind } from "@/src/lib/books/google-books/book-kind";
+
 const NOISE_PATTERNS = [
   /^juvenile (fiction|literature|audience|works)$/i,
   /^fiction$/i,
@@ -154,15 +156,28 @@ function extractSubjectTags(subjects: string[], genreLabels: string[]): string[]
   return tags;
 }
 
-export function normalizeCategories(categories: string[] | undefined): {
+export function normalizeCategories(
+  categories: string[] | undefined,
+  mainCategory?: string,
+): {
   genreLabels: string[];
   subjectTags: string[];
 } {
-  if (!categories?.length) {
+  const categoryPaths = [...(categories ?? [])];
+  const trimmedMainCategory = mainCategory?.trim();
+
+  if (
+    trimmedMainCategory &&
+    !categoryPaths.some((category) => category.trim() === trimmedMainCategory)
+  ) {
+    categoryPaths.unshift(trimmedMainCategory);
+  }
+
+  if (categoryPaths.length === 0) {
     return { genreLabels: [], subjectTags: [] };
   }
 
-  const subjects = flattenCategories(categories);
+  const subjects = flattenCategories(categoryPaths);
   const genreLabels = extractGenreLabels(subjects);
   const subjectTags = extractSubjectTags(subjects, genreLabels);
 
@@ -171,20 +186,83 @@ export function normalizeCategories(categories: string[] | undefined): {
 
 const MAX_SEARCH_QUERIES = 5;
 
+const GENRE_SEARCH_ORDER = [
+  "Fantasy",
+  "Romance",
+  "Science Fiction",
+  "Young Adult",
+  "Mystery",
+  "Thriller",
+  "Horror",
+];
+
+function orderGenresForSearch(genreLabels: string[]): string[] {
+  return [...genreLabels].sort((left, right) => {
+    const leftIndex = GENRE_SEARCH_ORDER.indexOf(left);
+    const rightIndex = GENRE_SEARCH_ORDER.indexOf(right);
+    const normalizedLeft = leftIndex === -1 ? GENRE_SEARCH_ORDER.length : leftIndex;
+    const normalizedRight = rightIndex === -1 ? GENRE_SEARCH_ORDER.length : rightIndex;
+
+    if (normalizedLeft !== normalizedRight) {
+      return normalizedLeft - normalizedRight;
+    }
+
+    return left.localeCompare(right);
+  });
+}
+
+/** Too broad for standalone subject: queries; still used in overlap scoring. */
+const GENERIC_SEARCH_SUBJECTS = new Set([
+  "love",
+  "women",
+  "men",
+  "marriage",
+  "family",
+  "sex",
+  "gender",
+  "relationships",
+  "society",
+  "life",
+  "death",
+  "war",
+  "world",
+]);
+
+/** Vague subject tags that should only appear paired with a genre, never alone. */
+const WEAK_SUBJECT_TAGS = new Set(["epic", "paranormal", "general", "magic", "adventure"]);
+
+function isSearchableSubject(label: string): boolean {
+  return !GENERIC_SEARCH_SUBJECTS.has(label.toLowerCase());
+}
+
+function isStrongSubject(label: string): boolean {
+  return isSearchableSubject(label) && !WEAK_SUBJECT_TAGS.has(label.toLowerCase());
+}
+
 function subjectClause(label: string): string {
   return `subject:${categoryToSubjectQuery(label)}`;
+}
+
+export interface BuildRelatedBookSearchQueriesOptions {
+  bookKind?: BookKind;
 }
 
 /** Build Google Books search queries from specific to broad for related-book discovery. */
 export function buildRelatedBookSearchQueries(
   genreLabels: string[],
   subjectTags: string[],
+  options: BuildRelatedBookSearchQueriesOptions = {},
 ): string[] {
+  const { bookKind = "unknown" } = options;
   const queries: string[] = [];
   const seen = new Set<string>();
 
+  function buildQuery(clauses: string[]): string {
+    return clauses.join("+");
+  }
+
   function addQuery(clauses: string[]): void {
-    const query = clauses.join("+");
+    const query = buildQuery(clauses);
     if (seen.has(query)) {
       return;
     }
@@ -192,28 +270,63 @@ export function buildRelatedBookSearchQueries(
     queries.push(query);
   }
 
-  const topSubjects = subjectTags.slice(0, 3);
+  const orderedGenres = orderGenresForSearch(genreLabels);
+  const topSubjects = subjectTags
+    .filter(isSearchableSubject)
+    .slice(0, 3);
+  const strongSubjects = topSubjects.filter(isStrongSubject);
+  const hasSubjectQueries = strongSubjects.length > 0;
+  const primaryGenre = orderedGenres[0];
+  const secondaryGenre = orderedGenres[1];
 
-  for (let i = 0; i < topSubjects.length; i++) {
-    for (let j = i + 1; j < topSubjects.length; j++) {
-      addQuery([subjectClause(topSubjects[i]), subjectClause(topSubjects[j])]);
+  if (primaryGenre && secondaryGenre) {
+    addQuery([subjectClause(primaryGenre), subjectClause(secondaryGenre)]);
+  }
+
+  if (primaryGenre && orderedGenres.includes("Fantasy") && orderedGenres.includes("Romance")) {
+    addQuery([subjectClause("Fantasy"), subjectClause("Young Adult")]);
+  }
+
+  for (let i = 0; i < strongSubjects.length; i++) {
+    for (let j = i + 1; j < strongSubjects.length; j++) {
+      addQuery([subjectClause(strongSubjects[i]), subjectClause(strongSubjects[j])]);
     }
   }
 
-  for (const tag of topSubjects) {
+  if (primaryGenre) {
+    for (const tag of topSubjects.slice(0, 3)) {
+      addQuery([subjectClause(primaryGenre), subjectClause(tag)]);
+    }
+    if (secondaryGenre) {
+      for (const tag of topSubjects.slice(0, 2)) {
+        addQuery([subjectClause(secondaryGenre), subjectClause(tag)]);
+      }
+    }
+  }
+
+  for (const tag of strongSubjects) {
     addQuery([subjectClause(tag)]);
   }
 
-  const primaryGenre = genreLabels[0];
-  if (primaryGenre) {
-    for (const tag of topSubjects.slice(0, 2)) {
-      addQuery([subjectClause(primaryGenre), subjectClause(tag)]);
+  if (!hasSubjectQueries) {
+    for (const genre of orderedGenres) {
+      addQuery([subjectClause(genre)]);
     }
+    return queries.slice(0, MAX_SEARCH_QUERIES);
   }
 
-  for (const genre of genreLabels) {
-    addQuery([subjectClause(genre)]);
+  const broadFallbackQuery =
+    primaryGenre && secondaryGenre
+      ? buildQuery([subjectClause(primaryGenre), subjectClause(secondaryGenre)])
+      : primaryGenre
+        ? buildQuery([subjectClause(primaryGenre)])
+        : null;
+  const specificQueries = queries.filter((query) => query !== broadFallbackQuery);
+  const trimmedSpecific = specificQueries.slice(0, MAX_SEARCH_QUERIES - 1);
+
+  if (broadFallbackQuery) {
+    return [...trimmedSpecific, broadFallbackQuery];
   }
 
-  return queries.slice(0, MAX_SEARCH_QUERIES);
+  return trimmedSpecific.slice(0, MAX_SEARCH_QUERIES);
 }
