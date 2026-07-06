@@ -5,6 +5,7 @@ import {
   hasVolumeCover,
   isRecommendableVolume,
   matchesVolumeLanguage,
+  normalizeLanguageCode,
 } from "@/src/lib/books/google-books/is-recommendable-volume";
 import type { GoogleBooksVolume } from "@/src/lib/books/google-books/schemas";
 
@@ -64,6 +65,34 @@ describe("recommendable volume filters", () => {
     ).toBe(false);
   });
 
+  it("matches language codes by primary subtag", () => {
+    expect(matchesVolumeLanguage(makeVolume({ id: "gb", language: "en-GB" }), "en")).toBe(
+      true,
+    );
+    expect(normalizeLanguageCode("en-GB")).toBe("en");
+  });
+
+  it("accepts sparse search listings for related-book recommendations", () => {
+    const listing: GoogleBooksVolume = {
+      id: "listing",
+      volumeInfo: {
+        title: "Fourth Wing",
+        authors: ["Rebecca Yarros"],
+        imageLinks: { thumbnail: "https://example.com/cover.jpg" },
+      },
+    };
+
+    expect(
+      isRecommendableVolume(listing, {
+        exclusion,
+        language: "en",
+        sourceBookKind: "fiction",
+        allowUnknownLanguage: true,
+        allowSearchListings: true,
+      }),
+    ).toBe(true);
+  });
+
   it("excludes volumes without a cover image", () => {
     expect(
       isRecommendableVolume(
@@ -82,5 +111,66 @@ describe("recommendable volume filters", () => {
         { exclusion, language: "nl" },
       ),
     ).toBe(true);
+  });
+
+  it("rejects candidates with a mismatched book kind", () => {
+    const fictionVolume: GoogleBooksVolume = {
+      id: "fiction",
+      volumeInfo: {
+        printType: "BOOK",
+        language: "nl",
+        categories: ["Fiction / Romance"],
+        imageLinks: { thumbnail: "https://example.com/cover.jpg" },
+        industryIdentifiers: [{ type: "ISBN_13", identifier: "9780000000002" }],
+      },
+    };
+    const nonfictionVolume: GoogleBooksVolume = {
+      id: "nonfiction",
+      volumeInfo: {
+        printType: "BOOK",
+        language: "nl",
+        categories: ["Social Science / Women's Studies"],
+        imageLinks: { thumbnail: "https://example.com/cover.jpg" },
+        industryIdentifiers: [{ type: "ISBN_13", identifier: "9780000000003" }],
+      },
+    };
+
+    expect(
+      isRecommendableVolume(fictionVolume, {
+        exclusion,
+        language: "nl",
+        sourceBookKind: "fiction",
+      }),
+    ).toBe(true);
+
+    expect(
+      isRecommendableVolume(nonfictionVolume, {
+        exclusion,
+        language: "nl",
+        sourceBookKind: "fiction",
+      }),
+    ).toBe(false);
+  });
+
+  it("filters scholarly volumes for commercial fiction recommendations", () => {
+    const scholarlyVolume: GoogleBooksVolume = {
+      id: "scholarly",
+      volumeInfo: {
+        printType: "BOOK",
+        language: "nl",
+        categories: ["Social Science / Gender Studies"],
+        imageLinks: { thumbnail: "https://example.com/cover.jpg" },
+        industryIdentifiers: [{ type: "ISBN_13", identifier: "9780000000004" }],
+      },
+    };
+
+    expect(
+      isRecommendableVolume(scholarlyVolume, {
+        exclusion,
+        language: "nl",
+        sourceBookKind: "fiction",
+        filterScholarlyForFiction: true,
+      }),
+    ).toBe(false);
   });
 });
