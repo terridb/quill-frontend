@@ -2,7 +2,7 @@
 
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { bookKeys } from "@/src/hooks/book-keys";
-import { fetchBookSearch } from "@/src/lib/openlibrary/fetch-book-search";
+import { fetchBookSearch } from "@/src/lib/books/fetch-book-search";
 
 export { bookKeys };
 

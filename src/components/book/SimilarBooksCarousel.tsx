@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import type { RelatedBook } from "@/src/types/open-library";
+import type { RelatedBook } from "@/src/types/book";
 import { SimilarBookCard } from "@/src/components/book/SimilarBookCard";
 import { ChevronLeftIcon, ChevronRightIcon } from "@/src/components/ui/icons";
 import { useMediaQuery } from "@/src/hooks/use-media-query";
@@ -71,12 +71,12 @@ export function SimilarBooksCarousel({ books }: SimilarBooksCarouselProps) {
           >
             {pages.map((pageBooks, pageIndex) => (
               <div
-                key={pageBooks.map((book) => book.openLibraryId).join("-")}
+                key={pageBooks.map((book) => book.bookId).join("-")}
                 className="similar-books-page"
                 aria-hidden={pageIndex !== page}
               >
                 {pageBooks.map((book) => (
-                  <SimilarBookCard key={book.openLibraryId} book={book} />
+                  <SimilarBookCard key={book.bookId} book={book} />
                 ))}
               </div>
             ))}

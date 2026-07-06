@@ -6,7 +6,7 @@ import { useBookStatus } from "@/src/hooks/use-book-status";
 import {
   READING_STATUS_LABELS,
   type ReadingStatus,
-} from "@/src/types/open-library";
+} from "@/src/types/book";
 
 const STATUS_OPTIONS: ReadingStatus[] = [
   "want_to_read",
@@ -16,15 +16,15 @@ const STATUS_OPTIONS: ReadingStatus[] = [
 ];
 
 export interface BookStatusActionProps {
-  openLibraryId: string;
+  bookId: string;
   className?: string;
 }
 
 export function BookStatusAction({
-  openLibraryId,
+  bookId,
   className = "",
 }: BookStatusActionProps) {
-  const { status, setStatus } = useBookStatus(openLibraryId);
+  const { status, setStatus } = useBookStatus(bookId);
   const [isOpen, setIsOpen] = useState(false);
   const menuId = useId();
   const containerRef = useRef<HTMLDivElement>(null);

@@ -1,11 +1,11 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { BookDetailPage } from "@/src/components/book/BookDetailPage";
+import { parseBookRouteSlug } from "@/src/lib/books/book-path";
 import {
   fetchBookDetail,
   isBookNotFoundError,
-} from "@/src/lib/openlibrary/fetch-book-detail";
-import { parseBookRouteSlug } from "@/src/lib/openlibrary/book-path";
+} from "@/src/lib/books/fetch-book-detail";
 
 export const revalidate = 86400;
 
@@ -24,7 +24,7 @@ export async function generateMetadata({
   }
 
   try {
-    const book = await fetchBookDetail(parsed.openLibraryId);
+    const book = await fetchBookDetail(parsed.bookId);
     const description = book.description?.slice(0, 160) ?? undefined;
 
     return {
@@ -45,7 +45,7 @@ export default async function BookPage({ params }: BookPageProps) {
   }
 
   try {
-    const book = await fetchBookDetail(parsed.openLibraryId);
+    const book = await fetchBookDetail(parsed.bookId);
     return <BookDetailPage book={book} />;
   } catch (error) {
     if (isBookNotFoundError(error)) {

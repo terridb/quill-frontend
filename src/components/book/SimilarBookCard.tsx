@@ -1,5 +1,5 @@
-import type { RelatedBook } from "@/src/types/open-library";
-import { getBookPath } from "@/src/lib/openlibrary/book-path";
+import type { RelatedBook } from "@/src/types/book";
+import { getBookPath } from "@/src/lib/books/book-path";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -11,7 +11,7 @@ export interface SimilarBookCardProps {
 export function SimilarBookCard({ book, className = "" }: SimilarBookCardProps) {
   return (
     <Link
-      href={getBookPath(book.openLibraryId, book.title)}
+      href={getBookPath(book.bookId, book.title)}
       className={`group focus-ring block min-w-0 w-full transition-[transform,box-shadow] duration-200 hover:-translate-y-0.5 ${className}`}
     >
       <div className="relative mb-2 aspect-[2/3] w-full overflow-hidden rounded-md bg-[var(--color-fill)] shadow-[var(--shadow-cover)] transition-shadow duration-200 group-hover:shadow-[var(--shadow-md)]">

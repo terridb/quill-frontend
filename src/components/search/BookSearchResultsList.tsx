@@ -51,7 +51,7 @@ export function BookSearchResultsList({
   return (
     <ul className={`divide-y divide-[var(--color-border)] ${className}`} aria-live="polite">
       {data.map((book) => (
-        <BookSearchResultItem key={book.id} book={book} />
+        <BookSearchResultItem key={book.bookId} book={book} />
       ))}
     </ul>
   );

@@ -1,4 +1,4 @@
-import type { BookDetail } from "@/src/types/open-library";
+import type { BookDetail } from "@/src/types/book";
 import { BookCover } from "@/src/components/book/BookCover";
 import { BookDescription } from "@/src/components/book/BookDescription";
 import { BookPageCount } from "@/src/components/book/BookPageCount";
@@ -23,7 +23,7 @@ export function BookDetailPage({ book }: BookDetailPageProps) {
           className="aspect-[2/3] w-[11rem] shrink-0 md:w-full"
         />
         <BookStatusAction
-          openLibraryId={book.openLibraryId}
+          bookId={book.bookId}
           className="mt-5 hidden shrink-0 md:block"
         />
       </aside>
@@ -38,7 +38,7 @@ export function BookDetailPage({ book }: BookDetailPageProps) {
           className="justify-center md:justify-start"
         />
         <BookStatusAction
-          openLibraryId={book.openLibraryId}
+          bookId={book.bookId}
           className="md:hidden"
         />
         <BookPageCount numberOfPages={book.numberOfPages} />

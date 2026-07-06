@@ -1,5 +1,5 @@
-import { searchOpenLibraryBooks } from "@/src/lib/openlibrary/search-books";
-import { bookSearchQuerySchema } from "@/src/lib/openlibrary/schemas";
+import { bookSearchQuerySchema } from "@/src/lib/books/schemas";
+import { searchBooks } from "@/src/lib/books/search-books";
 
 export const dynamic = "force-dynamic";
 
@@ -17,7 +17,7 @@ export async function GET(request: Request) {
   }
 
   try {
-    const results = await searchOpenLibraryBooks(parsed.data.q);
+    const results = await searchBooks(parsed.data.q);
     return Response.json({ results });
   } catch (error) {
     console.error("Book search failed:", error);

@@ -1,4 +1,4 @@
-import type { RelatedBook } from "@/src/types/open-library";
+import type { RelatedBook } from "@/src/types/book";
 import { SimilarBooksCarousel } from "@/src/components/book/SimilarBooksCarousel";
 
 export interface SimilarBooksProps {
