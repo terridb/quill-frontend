@@ -3,6 +3,7 @@ import { googleBooksFetch } from "@/src/lib/books/google-books/client";
 import {
   categoryToSubjectQuery,
 } from "@/src/lib/books/google-books/normalize-categories";
+import { isUserFacingBook } from "@/src/lib/books/google-books/is-user-facing-book";
 import { mapVolumeToRelatedBook } from "@/src/lib/books/google-books/map-volume";
 import { googleBooksSearchResponseSchema } from "@/src/lib/books/google-books/schemas";
 
@@ -53,7 +54,7 @@ async function fetchBooksBySubject(subject: string): Promise<RelatedBook[]> {
     const books: RelatedBook[] = [];
 
     for (const volume of parsed.data.items) {
-      if (seenIds.has(volume.id)) {
+      if (seenIds.has(volume.id) || !isUserFacingBook(volume)) {
         continue;
       }
       seenIds.add(volume.id);

@@ -2,6 +2,7 @@ import { cache } from "react";
 import type { BookDetail } from "@/src/types/book";
 import { googleBooksFetch } from "@/src/lib/books/google-books/client";
 import { fetchRelatedGoogleBooks } from "@/src/lib/books/google-books/fetch-related-books";
+import { isUserFacingBook } from "@/src/lib/books/google-books/is-user-facing-book";
 import {
   mapVolumeToBookDetail,
 } from "@/src/lib/books/google-books/map-volume";
@@ -39,6 +40,10 @@ async function fetchGoogleBookDetailUncached(bookId: string): Promise<BookDetail
 
   if (!parsed.success) {
     throw new Error("Invalid volume response from Google Books");
+  }
+
+  if (!isUserFacingBook(parsed.data)) {
+    throw new BookNotFoundError(bookId);
   }
 
   const { genreLabels } = normalizeCategories(parsed.data.volumeInfo.categories);
