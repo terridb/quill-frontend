@@ -1,7 +1,10 @@
 import { cache } from "react";
 import type { BookDetail } from "@/src/types/book";
 import { googleBooksFetch } from "@/src/lib/books/google-books/client";
+import { fetchAuthorGoogleBooks } from "@/src/lib/books/google-books/fetch-author-books";
+import { getBookExclusion } from "@/src/lib/books/google-books/book-exclusion";
 import { fetchRelatedGoogleBooks } from "@/src/lib/books/google-books/fetch-related-books";
+import { getVolumeLanguage } from "@/src/lib/books/google-books/is-recommendable-volume";
 import { isUserFacingBook } from "@/src/lib/books/google-books/is-user-facing-book";
 import {
   mapVolumeToBookDetail,
@@ -46,10 +49,24 @@ async function fetchGoogleBookDetailUncached(bookId: string): Promise<BookDetail
     throw new BookNotFoundError(bookId);
   }
 
-  const { genreLabels } = normalizeCategories(parsed.data.volumeInfo.categories);
-  const relatedBooks = await fetchRelatedGoogleBooks(genreLabels, bookId);
+  const { genreLabels, subjectTags } = normalizeCategories(parsed.data.volumeInfo.categories);
+  const primaryAuthor = parsed.data.volumeInfo.authors?.[0];
+  const exclusion = getBookExclusion(parsed.data);
+  const language = getVolumeLanguage(parsed.data);
 
-  return mapVolumeToBookDetail(parsed.data, relatedBooks);
+  const [relatedBooksRaw, authorBooks] = await Promise.all([
+    fetchRelatedGoogleBooks({ genreLabels, subjectTags, exclusion, language }),
+    primaryAuthor
+      ? fetchAuthorGoogleBooks(primaryAuthor, exclusion, language)
+      : Promise.resolve([]),
+  ]);
+
+  const authorIds = new Set(authorBooks.map((book) => book.bookId));
+  const relatedBooks = relatedBooksRaw.filter(
+    (book) => book.bookId !== exclusion.bookId && !authorIds.has(book.bookId),
+  );
+
+  return mapVolumeToBookDetail(parsed.data, relatedBooks, authorBooks);
 }
 
 export const fetchGoogleBookDetail = cache(fetchGoogleBookDetailUncached);

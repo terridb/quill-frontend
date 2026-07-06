@@ -32,6 +32,7 @@ export interface BookDetail {
   coverUrl: string | null;
   numberOfPages: number | null;
   relatedBooks: RelatedBook[];
+  authorBooks: RelatedBook[];
 }
 
 export const READING_STATUS_LABELS: Record<ReadingStatus, string> = {

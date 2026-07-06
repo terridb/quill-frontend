@@ -1,37 +1,36 @@
 import type { RelatedBook } from "@/src/types/book";
 import { googleBooksFetch } from "@/src/lib/books/google-books/client";
+import {
+  buildAuthorSearchQueries,
+  volumeIncludesAuthor,
+} from "@/src/lib/books/google-books/author-matching";
 import type { BookExclusion } from "@/src/lib/books/google-books/book-exclusion";
 import {
   isRecommendableVolume,
   type RecommendableVolumeCriteria,
 } from "@/src/lib/books/google-books/is-recommendable-volume";
 import { mapVolumeToRelatedBook } from "@/src/lib/books/google-books/map-volume";
-import { buildRelatedBookSearchQueries } from "@/src/lib/books/google-books/normalize-categories";
-import {
-  rankRelatedVolumes,
-  type RelatedBookSignals,
-} from "@/src/lib/books/google-books/score-related-books";
 import {
   googleBooksSearchResponseSchema,
   type GoogleBooksVolume,
 } from "@/src/lib/books/google-books/schemas";
 
-const FETCH_LIMIT = 40;
-const MAX_RELATED = 20;
+const PAGE_SIZE = 40;
+const MAX_PAGES_PER_QUERY = 3;
+const MAX_AUTHOR_BOOKS = 20;
 
-export interface FetchRelatedGoogleBooksOptions extends RelatedBookSignals {
-  exclusion: BookExclusion;
-  language: string | null;
-}
-
-async function fetchVolumesByQuery(
+async function fetchAuthorVolumesByQuery(
   query: string,
   language: string | null,
 ): Promise<GoogleBooksVolume[]> {
-  try {
+  const volumes: GoogleBooksVolume[] = [];
+  const seenIds = new Set<string>();
+
+  for (let page = 0; page < MAX_PAGES_PER_QUERY; page++) {
     const params = new URLSearchParams({
       q: query,
-      maxResults: String(FETCH_LIMIT),
+      maxResults: String(PAGE_SIZE),
+      startIndex: String(page * PAGE_SIZE),
       printType: "books",
       orderBy: "relevance",
     });
@@ -45,18 +44,17 @@ async function fetchVolumesByQuery(
     });
 
     if (!response.ok) {
-      return [];
+      break;
     }
 
     const json: unknown = await response.json();
     const parsed = googleBooksSearchResponseSchema.safeParse(json);
 
     if (!parsed.success || !parsed.data.items?.length) {
-      return [];
+      break;
     }
 
-    const seenIds = new Set<string>();
-    const volumes: GoogleBooksVolume[] = [];
+    let addedThisPage = 0;
 
     for (const volume of parsed.data.items) {
       if (seenIds.has(volume.id)) {
@@ -64,15 +62,18 @@ async function fetchVolumesByQuery(
       }
       seenIds.add(volume.id);
       volumes.push(volume);
+      addedThisPage++;
     }
 
-    return volumes;
-  } catch {
-    return [];
+    if (parsed.data.items.length < PAGE_SIZE || addedThisPage === 0) {
+      break;
+    }
   }
+
+  return volumes;
 }
 
-function collectUniqueVolumes(
+function collectAuthorVolumes(
   volumeGroups: GoogleBooksVolume[][],
 ): GoogleBooksVolume[] {
   const seenIds = new Set<string>();
@@ -91,35 +92,48 @@ function collectUniqueVolumes(
   return volumes;
 }
 
-export async function fetchRelatedGoogleBooks({
-  genreLabels,
-  subjectTags,
-  exclusion,
-  language,
-}: FetchRelatedGoogleBooksOptions): Promise<RelatedBook[]> {
-  const queries = buildRelatedBookSearchQueries(genreLabels, subjectTags);
+export async function fetchAuthorGoogleBooks(
+  author: string,
+  exclusion: BookExclusion,
+  language: string | null,
+  maxResults = MAX_AUTHOR_BOOKS,
+): Promise<RelatedBook[]> {
+  const queries = buildAuthorSearchQueries(author);
 
   if (queries.length === 0) {
     return [];
   }
 
-  const criteria: RecommendableVolumeCriteria = { exclusion, language };
+  try {
+    const volumeGroups = await Promise.all(
+      queries.map((query) => fetchAuthorVolumesByQuery(query, language)),
+    );
+    const candidates = collectAuthorVolumes(volumeGroups);
+    const criteria: RecommendableVolumeCriteria = {
+      exclusion,
+      language,
+      allowUnknownLanguage: true,
+    };
 
-  const volumeGroups = await Promise.all(
-    queries.map((query) => fetchVolumesByQuery(query, language)),
-  );
-  const candidates = collectUniqueVolumes(volumeGroups).filter((volume) =>
-    isRecommendableVolume(volume, criteria),
-  );
-  const ranked = rankRelatedVolumes(
-    candidates,
-    { genreLabels, subjectTags },
-    exclusion,
-    MAX_RELATED,
-  );
+    const books: RelatedBook[] = [];
 
-  return ranked
-    .filter((volume) => isRecommendableVolume(volume, criteria))
-    .map(mapVolumeToRelatedBook)
-    .filter((book) => book.bookId !== exclusion.bookId);
+    for (const volume of candidates) {
+      if (
+        !volumeIncludesAuthor(volume, author) ||
+        !isRecommendableVolume(volume, criteria)
+      ) {
+        continue;
+      }
+
+      books.push(mapVolumeToRelatedBook(volume));
+
+      if (books.length >= maxResults) {
+        break;
+      }
+    }
+
+    return books.filter((book) => book.bookId !== exclusion.bookId);
+  } catch {
+    return [];
+  }
 }

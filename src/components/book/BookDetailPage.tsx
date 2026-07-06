@@ -1,4 +1,5 @@
 import type { BookDetail } from "@/src/types/book";
+import { AuthorBooks } from "@/src/components/book/AuthorBooks";
 import { BookCover } from "@/src/components/book/BookCover";
 import { BookDescription } from "@/src/components/book/BookDescription";
 import { BookPageCount } from "@/src/components/book/BookPageCount";
@@ -61,6 +62,10 @@ export function BookDetailPage({ book }: BookDetailPageProps) {
           </section>
         ) : null}
 
+        <AuthorBooks
+          author={book.authors.split(",")[0]?.trim() ?? book.authors}
+          books={book.authorBooks}
+        />
         <SimilarBooks books={book.relatedBooks} />
       </div>
     </article>

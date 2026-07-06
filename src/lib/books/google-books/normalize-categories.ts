@@ -168,3 +168,52 @@ export function normalizeCategories(categories: string[] | undefined): {
 
   return { genreLabels, subjectTags };
 }
+
+const MAX_SEARCH_QUERIES = 5;
+
+function subjectClause(label: string): string {
+  return `subject:${categoryToSubjectQuery(label)}`;
+}
+
+/** Build Google Books search queries from specific to broad for related-book discovery. */
+export function buildRelatedBookSearchQueries(
+  genreLabels: string[],
+  subjectTags: string[],
+): string[] {
+  const queries: string[] = [];
+  const seen = new Set<string>();
+
+  function addQuery(clauses: string[]): void {
+    const query = clauses.join("+");
+    if (seen.has(query)) {
+      return;
+    }
+    seen.add(query);
+    queries.push(query);
+  }
+
+  const topSubjects = subjectTags.slice(0, 3);
+
+  for (let i = 0; i < topSubjects.length; i++) {
+    for (let j = i + 1; j < topSubjects.length; j++) {
+      addQuery([subjectClause(topSubjects[i]), subjectClause(topSubjects[j])]);
+    }
+  }
+
+  for (const tag of topSubjects) {
+    addQuery([subjectClause(tag)]);
+  }
+
+  const primaryGenre = genreLabels[0];
+  if (primaryGenre) {
+    for (const tag of topSubjects.slice(0, 2)) {
+      addQuery([subjectClause(primaryGenre), subjectClause(tag)]);
+    }
+  }
+
+  for (const genre of genreLabels) {
+    addQuery([subjectClause(genre)]);
+  }
+
+  return queries.slice(0, MAX_SEARCH_QUERIES);
+}

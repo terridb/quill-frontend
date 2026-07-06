@@ -37,6 +37,7 @@ export function mapVolumeToRelatedBook(volume: GoogleBooksVolume): RelatedBook {
 export function mapVolumeToBookDetail(
   volume: GoogleBooksVolume,
   relatedBooks: RelatedBook[],
+  authorBooks: RelatedBook[] = [],
 ): BookDetail {
   const { id, volumeInfo } = volume;
   const { genreLabels, subjectTags } = normalizeCategories(volumeInfo.categories);
@@ -53,5 +54,6 @@ export function mapVolumeToBookDetail(
     numberOfPages:
       typeof pageCount === "number" && pageCount > 0 ? pageCount : null,
     relatedBooks,
+    authorBooks,
   };
 }
