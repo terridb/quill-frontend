@@ -42,6 +42,27 @@ export function buildAuthorSearchQueries(author: string): string[] {
   return queries.slice(0, 3);
 }
 
+/** Broadest negated inauthor clause for related-book search. */
+export function buildAuthorExclusionQuery(author: string): string | null {
+  const queries = buildAuthorSearchQueries(author);
+  const broadest = queries.at(-1);
+
+  if (!broadest) {
+    return null;
+  }
+
+  return broadest.replace(/^inauthor:/, "-inauthor:");
+}
+
+export function appendAuthorExclusionToQuery(query: string, author: string): string {
+  const exclusion = buildAuthorExclusionQuery(author);
+  if (!exclusion) {
+    return query;
+  }
+
+  return `${query}+${exclusion}`;
+}
+
 export function volumeIncludesAuthor(
   volume: GoogleBooksVolume,
   author: string,
@@ -74,4 +95,23 @@ export function volumeIncludesAuthor(
       .filter((part) => part !== lastName)
       .some((part) => candidate.includes(part));
   });
+}
+
+export function relatedBookIncludesAuthor(
+  bookAuthors: string,
+  author: string,
+): boolean {
+  const authors = bookAuthors
+    .split(",")
+    .map((name) => name.trim())
+    .filter(Boolean);
+
+  if (authors.length === 0) {
+    return false;
+  }
+
+  return volumeIncludesAuthor(
+    { id: "related", volumeInfo: { authors } },
+    author,
+  );
 }
