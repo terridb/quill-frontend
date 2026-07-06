@@ -3,12 +3,12 @@ import { getBookPath } from "@/src/lib/books/book-path";
 import Image from "next/image";
 import Link from "next/link";
 
-export interface SimilarBookCardProps {
+export interface BookCardProps {
   book: RelatedBook;
   className?: string;
 }
 
-export function SimilarBookCard({ book, className = "" }: SimilarBookCardProps) {
+export function BookCard({ book, className = "" }: BookCardProps) {
   return (
     <Link
       href={getBookPath(book.bookId, book.title)}

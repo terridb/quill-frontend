@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import type { RelatedBook } from "@/src/types/book";
-import { SimilarBookCard } from "@/src/components/book/SimilarBookCard";
+import { BookCard } from "@/src/components/book/BookCard";
 import { ChevronLeftIcon, ChevronRightIcon } from "@/src/components/ui/icons";
 import { useMediaQuery } from "@/src/hooks/use-media-query";
 
@@ -10,7 +10,7 @@ const MOBILE_VISIBLE_COUNT = 2;
 const DESKTOP_VISIBLE_COUNT = 4;
 const DESKTOP_MEDIA_QUERY = "(min-width: 40rem)";
 
-export interface SimilarBooksCarouselProps {
+export interface BookCarouselProps {
   books: RelatedBook[];
 }
 
@@ -24,7 +24,7 @@ function chunkBooks(books: RelatedBook[], size: number): RelatedBook[][] {
   return pages;
 }
 
-export function SimilarBooksCarousel({ books }: SimilarBooksCarouselProps) {
+export function BookCarousel({ books }: BookCarouselProps) {
   const isDesktop = useMediaQuery(DESKTOP_MEDIA_QUERY);
   const visibleCount = isDesktop ? DESKTOP_VISIBLE_COUNT : MOBILE_VISIBLE_COUNT;
   const [page, setPage] = useState(0);
@@ -62,7 +62,7 @@ export function SimilarBooksCarousel({ books }: SimilarBooksCarouselProps) {
         <div
           className="similar-books-viewport min-w-0 flex-1"
           role="region"
-          aria-label="Similar books"
+          aria-label="Book carousel"
           aria-live="polite"
         >
           <div
@@ -76,7 +76,7 @@ export function SimilarBooksCarousel({ books }: SimilarBooksCarouselProps) {
                 aria-hidden={pageIndex !== page}
               >
                 {pageBooks.map((book) => (
-                  <SimilarBookCard key={book.bookId} book={book} />
+                  <BookCard key={book.bookId} book={book} />
                 ))}
               </div>
             ))}

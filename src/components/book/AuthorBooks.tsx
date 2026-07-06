@@ -1,5 +1,5 @@
 import type { RelatedBook } from "@/src/types/book";
-import { SimilarBooksCarousel } from "@/src/components/book/SimilarBooksCarousel";
+import { BookCarousel } from "@/src/components/book/BookCarousel";
 
 export interface AuthorBooksProps {
   author: string;
@@ -24,7 +24,7 @@ export function AuthorBooks({ author, books }: AuthorBooksProps) {
       >
         More books by {author}
       </h2>
-      <SimilarBooksCarousel books={books} />
+      <BookCarousel books={books} />
     </section>
   );
 }
