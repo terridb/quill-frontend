@@ -1,5 +1,5 @@
-import Link from "next/link";
 import { MobileNav } from "@/src/components/layout/MobileNav";
+import { NavBrandLink } from "@/src/components/layout/NavBrandLink";
 import { NavSearch } from "@/src/components/layout/NavSearch";
 
 export function PrimaryNav() {
@@ -9,12 +9,7 @@ export function PrimaryNav() {
         <MobileNav />
       </div>
       <div className="mx-auto hidden h-[var(--header-height)] max-w-5xl items-center gap-8 px-6 md:flex">
-        <Link
-          href="/"
-          className="focus-ring text-display shrink-0 text-[1.65rem] leading-none tracking-tight text-[var(--color-ink)]"
-        >
-          Quill
-        </Link>
+        <NavBrandLink className="focus-ring text-display shrink-0 text-[1.65rem] leading-none tracking-tight text-[var(--color-ink)]" />
         <div className="flex-1">
           <NavSearch />
         </div>

@@ -1,7 +1,7 @@
 "use client";
 
-import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { NavBrandLink } from "@/src/components/layout/NavBrandLink";
 import { useEffect, useRef, useState } from "react";
 import { BookSearchPanel } from "@/src/components/layout/BookSearchPanel";
 import { SearchIcon } from "@/src/components/ui/icons";
@@ -69,12 +69,10 @@ export function MobileNav() {
         </div>
 
         <div className="flex justify-center">
-          <Link
-            href="/"
+          <NavBrandLink
             className="focus-ring text-display text-[1.65rem] leading-none tracking-tight text-[var(--color-ink)]"
-          >
-            Quill
-          </Link>
+            onNavigate={collapseSearch}
+          />
         </div>
 
         <div aria-hidden="true" />
