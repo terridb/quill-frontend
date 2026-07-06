@@ -23,6 +23,9 @@ export const googleBooksVolumeInfoSchema = z.object({
   pageCount: z.number().optional(),
   printType: z.string().optional(),
   language: z.string().optional(),
+  publishedDate: z.string().optional(),
+  averageRating: z.number().optional(),
+  ratingsCount: z.number().optional(),
   imageLinks: googleBooksImageLinksSchema.optional(),
   industryIdentifiers: z
     .array(googleBooksIndustryIdentifierSchema)
