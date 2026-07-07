@@ -33,7 +33,6 @@ export function BookCarousel({ books }: BookCarouselProps) {
     [books, visibleCount],
   );
   const totalPages = pages.length;
-  const showControls = totalPages > 1;
 
   useEffect(() => {
     setPage(0);
@@ -48,17 +47,15 @@ export function BookCarousel({ books }: BookCarouselProps) {
   return (
     <div className="mt-5 min-w-0">
       <div className="flex min-w-0 items-center gap-2 sm:gap-3">
-        {showControls ? (
-          <button
-            type="button"
-            onClick={() => setPage((current) => current - 1)}
-            disabled={page === 0}
-            className="focus-ring shrink-0 rounded-full border border-[var(--color-border)] bg-[var(--color-surface)] p-2 shadow-[var(--shadow-sm)] disabled:opacity-40"
-            aria-label="Previous books"
-          >
-            <ChevronLeftIcon className="h-4 w-4 text-[var(--color-ink)]" />
-          </button>
-        ) : null}
+        <button
+          type="button"
+          onClick={() => setPage((current) => current - 1)}
+          disabled={page === 0}
+          className="focus-ring shrink-0 rounded-full border border-[var(--color-border)] bg-[var(--color-surface)] p-2 shadow-[var(--shadow-sm)] disabled:opacity-40"
+          aria-label="Previous books"
+        >
+          <ChevronLeftIcon className="h-4 w-4 text-[var(--color-ink)]" />
+        </button>
         <div
           className="similar-books-viewport min-w-0 flex-1"
           role="region"
@@ -82,17 +79,15 @@ export function BookCarousel({ books }: BookCarouselProps) {
             ))}
           </div>
         </div>
-        {showControls ? (
-          <button
-            type="button"
-            onClick={() => setPage((current) => current + 1)}
-            disabled={page >= totalPages - 1}
-            className="focus-ring shrink-0 rounded-full border border-[var(--color-border)] bg-[var(--color-surface)] p-2 shadow-[var(--shadow-sm)] disabled:opacity-40"
-            aria-label="Next books"
-          >
-            <ChevronRightIcon className="h-4 w-4 text-[var(--color-ink)]" />
-          </button>
-        ) : null}
+        <button
+          type="button"
+          onClick={() => setPage((current) => current + 1)}
+          disabled={page >= totalPages - 1}
+          className="focus-ring shrink-0 rounded-full border border-[var(--color-border)] bg-[var(--color-surface)] p-2 shadow-[var(--shadow-sm)] disabled:opacity-40"
+          aria-label="Next books"
+        >
+          <ChevronRightIcon className="h-4 w-4 text-[var(--color-ink)]" />
+        </button>
       </div>
     </div>
   );
