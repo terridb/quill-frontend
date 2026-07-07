@@ -1,5 +1,5 @@
-import type { BookSearchResult } from "@/src/types/open-library";
-import { getBookPath } from "@/src/lib/openlibrary/book-path";
+import type { BookSearchResult } from "@/src/types/book";
+import { getBookPath } from "@/src/lib/books/book-path";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -11,7 +11,7 @@ export function BookSearchResultItem({ book }: BookSearchResultItemProps) {
   return (
     <li className="border-b border-[var(--color-border)] last:border-b-0">
       <Link
-        href={getBookPath(book.openLibraryId, book.title)}
+        href={getBookPath(book.bookId, book.title)}
         className="group focus-ring -mx-1 flex cursor-pointer gap-4 rounded-xl px-3 py-4 transition-colors duration-200 hover:bg-[var(--color-accent-soft)]"
       >
         <div className="relative h-[5.25rem] w-[3.25rem] shrink-0 overflow-hidden rounded-md bg-[var(--color-fill)] shadow-[var(--shadow-cover)] transition-[transform,box-shadow] duration-200 group-hover:-translate-y-0.5 group-hover:shadow-[var(--shadow-md)]">

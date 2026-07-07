@@ -1,7 +1,7 @@
 import type {
   BookSearchResponse,
   BookSearchResult,
-} from "@/src/types/open-library";
+} from "@/src/types/book";
 
 export async function fetchBookSearch(query: string): Promise<BookSearchResult[]> {
   const params = new URLSearchParams({ q: query });
