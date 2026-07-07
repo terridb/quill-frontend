@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { Fraunces, IBM_Plex_Sans } from "next/font/google";
-import { AppShell } from "@/src/components/layout/AppShell";
 import { QueryProvider } from "@/src/providers/query-provider";
 import { SearchProvider } from "@/src/providers/search-provider";
 import "./globals.css";
@@ -31,9 +30,7 @@ export default function RootLayout({
     <html lang="en">
       <body className={`${fraunces.variable} ${ibmPlexSans.variable} antialiased`}>
         <QueryProvider>
-          <SearchProvider>
-            <AppShell>{children}</AppShell>
-          </SearchProvider>
+          <SearchProvider>{children}</SearchProvider>
         </QueryProvider>
       </body>
     </html>
