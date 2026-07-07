@@ -1,5 +1,3 @@
-import Image from "next/image";
-
 export interface NavAvatarProps {
   avatarUrl: string;
   label: string;
@@ -29,13 +27,16 @@ export function NavAvatar({
 
   if (avatarUrl) {
     return (
-      <Image
+      // Native img avoids Next.js image optimizer issues with Supabase Storage URLs.
+      // eslint-disable-next-line @next/next/no-img-element
+      <img
         src={avatarUrl}
         alt=""
         width={dimension}
         height={dimension}
-        className="rounded-full object-cover"
-        unoptimized
+        className={`shrink-0 rounded-full object-cover ${
+          size === "sm" ? "size-9" : "size-10"
+        }`}
       />
     );
   }

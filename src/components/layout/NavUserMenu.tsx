@@ -53,7 +53,7 @@ export function NavUserMenu({ profile, email }: NavUserMenuProps) {
     <div ref={containerRef} className="relative">
       <button
         type="button"
-        className="focus-ring rounded-full"
+        className="focus-ring size-9 shrink-0 overflow-hidden rounded-full p-0"
         aria-haspopup="menu"
         aria-expanded={isOpen}
         aria-controls={menuId}
