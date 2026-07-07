@@ -4,11 +4,10 @@ import { useEffect, useMemo, useState } from "react";
 import type { RelatedBook } from "@/src/types/book";
 import { BookCard } from "@/src/components/book/BookCard";
 import { ChevronLeftIcon, ChevronRightIcon } from "@/src/components/ui/icons";
-import { useMediaQuery } from "@/src/hooks/use-media-query";
 
-const MOBILE_VISIBLE_COUNT = 2;
-const DESKTOP_VISIBLE_COUNT = 4;
-const DESKTOP_MEDIA_QUERY = "(min-width: 40rem)";
+// Keep page size stable across SSR and hydration. Column count is handled in CSS
+// (.similar-books-page uses 2 cols by default, 4 cols from 40rem).
+const VISIBLE_COUNT = 4;
 
 export interface BookCarouselProps {
   books: RelatedBook[];
@@ -24,25 +23,21 @@ function chunkBooks(books: RelatedBook[], size: number): RelatedBook[][] {
   return pages;
 }
 
-export function BookCarousel({ books }: BookCarouselProps) {
-  const isDesktop = useMediaQuery(DESKTOP_MEDIA_QUERY);
-  const visibleCount = isDesktop ? DESKTOP_VISIBLE_COUNT : MOBILE_VISIBLE_COUNT;
+function getBooksKey(books: RelatedBook[]): string {
+  return books.map((book) => book.bookId).join("|");
+}
+
+function BookCarouselInner({ books }: BookCarouselProps) {
   const [page, setPage] = useState(0);
-  const pages = useMemo(
-    () => chunkBooks(books, visibleCount),
-    [books, visibleCount],
-  );
-  const totalPages = pages.length;
+  const pages = useMemo(() => chunkBooks(books, VISIBLE_COUNT), [books]);
+  const lastPage = Math.max(pages.length - 1, 0);
+  const activePage = Math.min(page, lastPage);
 
   useEffect(() => {
-    setPage(0);
-  }, [books, visibleCount]);
-
-  useEffect(() => {
-    if (page > totalPages - 1) {
-      setPage(Math.max(totalPages - 1, 0));
+    if (page !== activePage) {
+      setPage(activePage);
     }
-  }, [page, totalPages]);
+  }, [page, activePage]);
 
   return (
     <div className="mt-5 min-w-0">
@@ -50,7 +45,7 @@ export function BookCarousel({ books }: BookCarouselProps) {
         <button
           type="button"
           onClick={() => setPage((current) => current - 1)}
-          disabled={page === 0}
+          disabled={activePage === 0}
           className="focus-ring shrink-0 rounded-full border border-[var(--color-border)] bg-[var(--color-surface)] p-2 shadow-[var(--shadow-sm)] disabled:opacity-40"
           aria-label="Previous books"
         >
@@ -64,13 +59,13 @@ export function BookCarousel({ books }: BookCarouselProps) {
         >
           <div
             className="similar-books-track"
-            style={{ transform: `translateX(-${page * 100}%)` }}
+            style={{ transform: `translateX(-${activePage * 100}%)` }}
           >
             {pages.map((pageBooks, pageIndex) => (
               <div
                 key={pageBooks.map((book) => book.bookId).join("-")}
                 className="similar-books-page"
-                aria-hidden={pageIndex !== page}
+                aria-hidden={pageIndex !== activePage}
               >
                 {pageBooks.map((book) => (
                   <BookCard key={book.bookId} book={book} />
@@ -82,7 +77,7 @@ export function BookCarousel({ books }: BookCarouselProps) {
         <button
           type="button"
           onClick={() => setPage((current) => current + 1)}
-          disabled={page >= totalPages - 1}
+          disabled={activePage >= lastPage}
           className="focus-ring shrink-0 rounded-full border border-[var(--color-border)] bg-[var(--color-surface)] p-2 shadow-[var(--shadow-sm)] disabled:opacity-40"
           aria-label="Next books"
         >
@@ -91,4 +86,8 @@ export function BookCarousel({ books }: BookCarouselProps) {
       </div>
     </div>
   );
+}
+
+export function BookCarousel({ books }: BookCarouselProps) {
+  return <BookCarouselInner key={getBooksKey(books)} books={books} />;
 }
