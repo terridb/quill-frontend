@@ -10,10 +10,9 @@ export async function uploadProfileAvatar(
   file: File,
 ): Promise<string> {
   const extension = file.name.split(".").pop() ?? "webp";
-  const path = `${userId}/avatar.${extension}`;
+  const path = `${userId}/avatar-${Date.now()}.${extension}`;
 
   const { error } = await supabase.storage.from("avatars").upload(path, file, {
-    upsert: true,
     contentType: file.type,
     cacheControl: "3600",
   });
