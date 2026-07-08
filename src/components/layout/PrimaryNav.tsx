@@ -1,4 +1,5 @@
 import { MobileNav } from "@/src/components/layout/MobileNav";
+import { NavAccount } from "@/src/components/layout/NavAccount";
 import { NavBrandLink } from "@/src/components/layout/NavBrandLink";
 import { NavSearch } from "@/src/components/layout/NavSearch";
 
@@ -13,6 +14,7 @@ export function PrimaryNav() {
         <div className="flex-1">
           <NavSearch />
         </div>
+        <NavAccount />
       </div>
     </header>
   );

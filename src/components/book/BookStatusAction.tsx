@@ -3,6 +3,7 @@
 import { useEffect, useId, useRef, useState } from "react";
 import { ChevronDownIcon } from "@/src/components/ui/icons";
 import { useBookStatus } from "@/src/hooks/use-book-status";
+import { isOutsideElement } from "@/src/lib/dom/safe-event-target";
 import {
   READING_STATUS_LABELS,
   type ReadingStatus,
@@ -41,10 +42,7 @@ export function BookStatusAction({
     };
 
     const onPointerDown = (event: MouseEvent) => {
-      if (
-        containerRef.current &&
-        !containerRef.current.contains(event.target as Node)
-      ) {
+      if (containerRef.current && isOutsideElement(containerRef.current, event)) {
         setIsOpen(false);
       }
     };

@@ -2,6 +2,7 @@
 
 import { usePathname } from "next/navigation";
 import { NavBrandLink } from "@/src/components/layout/NavBrandLink";
+import { MobileNavAccount } from "@/src/components/layout/MobileNavAccount";
 import { useEffect, useRef, useState } from "react";
 import { BookSearchPanel } from "@/src/components/layout/BookSearchPanel";
 import { SearchIcon } from "@/src/components/ui/icons";
@@ -75,7 +76,9 @@ export function MobileNav() {
           />
         </div>
 
-        <div aria-hidden="true" />
+        <div className="flex justify-end">
+          <MobileNavAccount />
+        </div>
       </div>
 
       {isSearchExpanded ? (

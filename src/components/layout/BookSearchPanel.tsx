@@ -2,6 +2,7 @@
 
 import { useEffect } from "react";
 import { BookSearchResultsList } from "@/src/components/search/BookSearchResultsList";
+import { isOutsideElement } from "@/src/lib/dom/safe-event-target";
 import { useSearch } from "@/src/providers/search-provider";
 
 export interface BookSearchPanelProps {
@@ -31,10 +32,7 @@ export function BookSearchPanel({
     };
 
     const onPointerDown = (event: MouseEvent) => {
-      if (
-        containerRef.current &&
-        !containerRef.current.contains(event.target as Node)
-      ) {
+      if (containerRef.current && isOutsideElement(containerRef.current, event)) {
         onClose();
       }
     };
