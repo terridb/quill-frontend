@@ -23,6 +23,19 @@ export function CreateProfileForm() {
   const [formError, setFormError] = useState<string | null>(null);
   const [avatarError, setAvatarError] = useState<string | null>(null);
 
+  const handleUsernameChange = (value: string) => {
+    setUsername(value);
+    setFieldErrors((prev) => {
+      if (!prev.username) {
+        return prev;
+      }
+
+      const { username: _removed, ...rest } = prev;
+      return rest;
+    });
+    setFormError(null);
+  };
+
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setFormError(null);
@@ -78,7 +91,7 @@ export function CreateProfileForm() {
           label="Username"
           type="text"
           value={username}
-          onChange={setUsername}
+          onChange={handleUsernameChange}
           error={fieldErrors.username}
           autoComplete="username"
         />
