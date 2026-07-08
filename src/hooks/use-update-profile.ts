@@ -3,12 +3,12 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { authKeys } from "@/src/hooks/auth-keys";
 import { mapProfileError } from "@/src/lib/profiles/errors";
-import type { CreateProfileInput } from "@/src/lib/profiles/schemas";
 import { updateCurrentProfile } from "@/src/lib/profiles/update-current-profile";
 import { uploadProfileAvatar } from "@/src/lib/profiles/upload-avatar";
 import { createClient } from "@/src/lib/supabase/client";
 
-export interface UpdateProfileInput extends CreateProfileInput {
+export interface UpdateProfileInput {
+  username?: string;
   avatar?: File;
 }
 
@@ -37,7 +37,7 @@ export function useUpdateProfile() {
         avatarUrl,
       });
 
-      return input.username;
+      return input.username ?? user.id;
     },
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: authKeys.profile() });

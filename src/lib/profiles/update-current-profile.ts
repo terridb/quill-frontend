@@ -1,7 +1,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 
 export interface UpdateCurrentProfileInput {
-  username: string;
+  username?: string;
   avatarUrl?: string;
 }
 
@@ -19,16 +19,22 @@ export async function updateCurrentProfile(
   }
 
   const updates: {
-    username: string;
-    setup_complete: boolean;
+    username?: string;
+    setup_complete?: boolean;
     avatar_url?: string;
-  } = {
-    username: input.username,
-    setup_complete: true,
-  };
+  } = {};
+
+  if (input.username !== undefined) {
+    updates.username = input.username;
+    updates.setup_complete = true;
+  }
 
   if (input.avatarUrl) {
     updates.avatar_url = input.avatarUrl;
+  }
+
+  if (Object.keys(updates).length === 0) {
+    return;
   }
 
   const { error } = await supabase

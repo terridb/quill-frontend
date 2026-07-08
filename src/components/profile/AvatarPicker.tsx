@@ -9,6 +9,9 @@ export interface AvatarPickerProps {
   onChange: (file: File | null) => void;
   onError: (message: string) => void;
   disabled?: boolean;
+  initialAvatarUrl?: string;
+  size?: "md" | "lg";
+  showFrame?: boolean;
 }
 
 export function AvatarPicker({
@@ -16,6 +19,9 @@ export function AvatarPicker({
   onChange,
   onError,
   disabled = false,
+  initialAvatarUrl = "",
+  size = "md",
+  showFrame = true,
 }: AvatarPickerProps) {
   const inputId = useId();
   const inputRef = useRef<HTMLInputElement>(null);
@@ -78,6 +84,10 @@ export function AvatarPicker({
     onChange(null);
   };
 
+  const avatarSizeClass = size === "lg" ? "h-28 w-28" : "h-24 w-24";
+  const fallbackTextClass = size === "lg" ? "text-base" : "text-sm";
+  const frameClass = showFrame ? "ring-2 ring-[var(--color-border)]" : "";
+
   return (
     <div className="flex flex-col items-center gap-3">
       <div className="relative">
@@ -86,12 +96,19 @@ export function AvatarPicker({
           <img
             src={previewUrl}
             alt=""
-            className="h-24 w-24 rounded-full object-cover ring-2 ring-[var(--color-border)]"
+            className={`${avatarSizeClass} rounded-full object-cover ${frameClass}`}
+          />
+        ) : initialAvatarUrl ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={initialAvatarUrl}
+            alt=""
+            className={`${avatarSizeClass} rounded-full object-cover ${frameClass}`}
           />
         ) : (
           <div
             aria-hidden="true"
-            className="flex h-24 w-24 items-center justify-center rounded-full bg-[var(--color-accent-soft)] text-sm font-medium text-[var(--color-accent)] ring-2 ring-[var(--color-border)]"
+            className={`flex ${avatarSizeClass} items-center justify-center rounded-full bg-[var(--color-accent-soft)] font-medium text-[var(--color-accent)] ${frameClass} ${fallbackTextClass}`}
           >
             Photo
           </div>

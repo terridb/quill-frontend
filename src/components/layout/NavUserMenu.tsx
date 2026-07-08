@@ -1,6 +1,8 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useId, useRef, useState } from "react";
+import { usePathname } from "next/navigation";
 import { signOut } from "@/src/app/auth/actions";
 import { NavAvatar } from "@/src/components/layout/NavAvatar";
 import { isOutsideElement } from "@/src/lib/dom/safe-event-target";
@@ -16,7 +18,12 @@ export function NavUserMenu({ profile, email }: NavUserMenuProps) {
   const [isSigningOut, setIsSigningOut] = useState(false);
   const menuId = useId();
   const containerRef = useRef<HTMLDivElement>(null);
+  const pathname = usePathname();
   const label = profile?.username || email;
+
+  useEffect(() => {
+    setIsOpen(false);
+  }, [pathname]);
 
   useEffect(() => {
     if (!isOpen) {
@@ -72,6 +79,16 @@ export function NavUserMenu({ profile, email }: NavUserMenuProps) {
           role="menu"
           className="absolute top-full right-0 z-50 mt-2 min-w-[10rem] overflow-hidden rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] py-1 shadow-[var(--shadow-md)]"
         >
+          <li role="none">
+            <Link
+              href="/profile"
+              role="menuitem"
+              className="focus-ring block px-4 py-2.5 text-sm text-[var(--color-ink)] transition-colors hover:bg-[var(--color-accent-soft)]"
+              onClick={() => setIsOpen(false)}
+            >
+              Profile
+            </Link>
+          </li>
           <li role="none">
             <button
               type="button"

@@ -1,7 +1,7 @@
 export interface NavAvatarProps {
   avatarUrl: string;
   label: string;
-  size?: "sm" | "md";
+  size?: "sm" | "md" | "lg";
 }
 
 function getInitials(label: string): string {
@@ -23,7 +23,11 @@ export function NavAvatar({
   label,
   size = "md",
 }: NavAvatarProps) {
-  const dimension = size === "sm" ? 36 : 40;
+  const dimension = size === "sm" ? 36 : size === "lg" ? 112 : 40;
+  const sizeClass =
+    size === "sm" ? "size-9" : size === "lg" ? "size-28" : "size-10";
+  const initialsClass =
+    size === "sm" ? "h-9 w-9 text-xs" : size === "lg" ? "h-28 w-28 text-2xl" : "h-10 w-10 text-sm";
 
   if (avatarUrl) {
     return (
@@ -34,9 +38,7 @@ export function NavAvatar({
         alt=""
         width={dimension}
         height={dimension}
-        className={`shrink-0 rounded-full object-cover ${
-          size === "sm" ? "size-9" : "size-10"
-        }`}
+        className={`shrink-0 rounded-full object-cover ${sizeClass}`}
       />
     );
   }
@@ -44,9 +46,7 @@ export function NavAvatar({
   return (
     <span
       aria-hidden="true"
-      className={`flex items-center justify-center rounded-full bg-[var(--color-accent-soft)] font-medium text-[var(--color-accent)] ${
-        size === "sm" ? "h-9 w-9 text-xs" : "h-10 w-10 text-sm"
-      }`}
+      className={`flex items-center justify-center rounded-full bg-[var(--color-accent-soft)] font-medium text-[var(--color-accent)] ${initialsClass}`}
     >
       {getInitials(label)}
     </span>
