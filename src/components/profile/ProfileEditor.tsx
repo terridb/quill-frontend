@@ -40,7 +40,7 @@ export function ProfileEditor({
   };
 
   return (
-    <div className="rounded-[1.75rem] border border-[var(--color-border)] bg-[var(--color-surface)] px-5 py-6 shadow-[var(--shadow-sm)] md:px-6 md:py-8">
+    <div className="rounded-[1.75rem] border border-[var(--color-border)] bg-[var(--color-surface)] px-6 py-8 shadow-[var(--shadow-sm)] md:px-7 md:py-9">
       <AvatarPicker
         value={avatar}
         onChange={setAvatar}

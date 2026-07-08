@@ -1,20 +1,26 @@
+"use client";
+
+import { useEffect, useState } from "react";
 import { NavUserMenu } from "@/src/components/layout/NavUserMenu";
-import { getCurrentProfile } from "@/src/lib/profiles/get-current-profile";
-import { createClient } from "@/src/lib/supabase/server";
+import { useProfile } from "@/src/hooks/use-profile";
+import { createClient } from "@/src/lib/supabase/client";
 
-export async function NavAccount() {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+export function NavAccount() {
+  const { data: profile } = useProfile();
+  const [email, setEmail] = useState("");
+  const [isAuthenticated, setIsAuthenticated] = useState(true);
 
-  if (!user) {
+  useEffect(() => {
+    const supabase = createClient();
+    void supabase.auth.getUser().then(({ data: { user } }) => {
+      setIsAuthenticated(Boolean(user));
+      setEmail(user?.email ?? "");
+    });
+  }, []);
+
+  if (isAuthenticated === false) {
     return null;
   }
 
-  const profile = await getCurrentProfile(user.id);
-
-  return (
-    <NavUserMenu profile={profile} email={user.email ?? ""} />
-  );
+  return <NavUserMenu profile={profile ?? null} email={email} />;
 }

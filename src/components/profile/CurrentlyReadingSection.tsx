@@ -44,7 +44,10 @@ export function CurrentlyReadingSection({
           id="currently-reading-heading"
           className="text-display text-balance text-xl tracking-tight text-[var(--color-ink)] md:text-[1.55rem]"
         >
-          Currently Reading {count}
+          <span>Currently Reading</span>
+          <span className="ml-4 align-middle text-[0.8em] font-medium tracking-[0.08em] text-[var(--color-accent)]">
+            {count}
+          </span>
         </h2>
         <FutureNavLink label="See all ›" />
       </div>
