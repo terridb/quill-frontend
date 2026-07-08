@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { mapProfileError, PrepareAvatarError } from "@/src/lib/profiles/errors";
 import { isProfileComplete } from "@/src/lib/profiles/is-profile-complete";
+import { getAvatarStoragePathFromUrl } from "@/src/lib/profiles/upload-avatar";
 import type { Profile } from "@/src/types/profile";
 
 describe("isProfileComplete", () => {
@@ -46,5 +47,27 @@ describe("mapProfileError", () => {
     expect(mapProfileError(new Error("boom"))).toBe(
       "Something went wrong. Try again.",
     );
+  });
+});
+
+describe("getAvatarStoragePathFromUrl", () => {
+  it("returns the storage path for avatar public URLs", () => {
+    expect(
+      getAvatarStoragePathFromUrl(
+        "https://example.supabase.co/storage/v1/object/public/avatars/user-123/avatar-123.webp",
+      ),
+    ).toBe("user-123/avatar-123.webp");
+  });
+
+  it("returns null for non-avatar URLs", () => {
+    expect(
+      getAvatarStoragePathFromUrl(
+        "https://example.supabase.co/storage/v1/object/public/covers/book.webp",
+      ),
+    ).toBeNull();
+  });
+
+  it("returns null for invalid URLs", () => {
+    expect(getAvatarStoragePathFromUrl("not-a-url")).toBeNull();
   });
 });
