@@ -10,8 +10,23 @@ export interface AvatarPickerProps {
   onError: (message: string) => void;
   disabled?: boolean;
   initialAvatarUrl?: string;
+  placeholderLabel?: string;
   size?: "md" | "lg";
   showFrame?: boolean;
+}
+
+function getPlaceholderInitials(label: string): string {
+  const trimmed = label.trim();
+  if (!trimmed) {
+    return "Q";
+  }
+
+  const parts = trimmed.split(/\s+/).filter(Boolean);
+  if (parts.length >= 2) {
+    return `${parts[0]![0] ?? ""}${parts[1]![0] ?? ""}`.toUpperCase();
+  }
+
+  return trimmed.slice(0, 2).toUpperCase();
 }
 
 export function AvatarPicker({
@@ -20,6 +35,7 @@ export function AvatarPicker({
   onError,
   disabled = false,
   initialAvatarUrl = "",
+  placeholderLabel = "",
   size = "md",
   showFrame = true,
 }: AvatarPickerProps) {
@@ -85,7 +101,7 @@ export function AvatarPicker({
   };
 
   const avatarSizeClass = size === "lg" ? "h-28 w-28" : "h-24 w-24";
-  const fallbackTextClass = size === "lg" ? "text-base" : "text-sm";
+  const fallbackTextClass = size === "lg" ? "text-2xl" : "text-xl";
   const frameClass = showFrame ? "ring-2 ring-[var(--color-border)]" : "";
 
   return (
@@ -110,7 +126,7 @@ export function AvatarPicker({
             aria-hidden="true"
             className={`flex ${avatarSizeClass} items-center justify-center rounded-full bg-[var(--color-accent-soft)] font-medium text-[var(--color-accent)] ${frameClass} ${fallbackTextClass}`}
           >
-            Photo
+            {getPlaceholderInitials(placeholderLabel)}
           </div>
         )}
         {isProcessing ? (
@@ -143,7 +159,7 @@ export function AvatarPicker({
       </div>
 
       <p className="text-center text-xs text-[var(--color-muted)]">
-        Square photo, JPEG/PNG/WebP. We&apos;ll resize it for you.
+        JPEG/PNG/WebP
       </p>
 
       <input

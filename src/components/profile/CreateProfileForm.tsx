@@ -59,13 +59,14 @@ export function CreateProfileForm() {
   }
 
   return (
-    <AuthCard eyebrow="New member" title="Choose your username">
+    <AuthCard eyebrow="New member" title="Finish your profile">
       <form onSubmit={handleSubmit} className="space-y-5" noValidate>
         <AvatarPicker
           value={avatar}
           onChange={setAvatar}
           onError={setAvatarError}
           disabled={updateProfile.isPending}
+          placeholderLabel={username}
         />
         {avatarError ? (
           <p role="alert" className="text-center text-sm text-[#8b3a3a]">
