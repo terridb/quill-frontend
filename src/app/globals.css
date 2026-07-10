@@ -66,6 +66,14 @@ button:disabled {
   box-shadow: var(--shadow-md);
 }
 
+.search-input::-webkit-search-cancel-button,
+.search-input::-webkit-search-decoration,
+.search-input::-webkit-search-results-button {
+  -webkit-appearance: none;
+  appearance: none;
+  display: none;
+}
+
 .focus-ring {
   outline: none;
 }
