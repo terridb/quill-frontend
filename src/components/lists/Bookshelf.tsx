@@ -1,16 +1,22 @@
-import { BookshelfCover } from "@/src/components/profile/BookshelfCover";
-import { BookshelfOverflow } from "@/src/components/profile/BookshelfOverflow";
+import { BookshelfCover } from "@/src/components/lists/BookshelfCover";
+import { BookshelfEmpty } from "@/src/components/lists/BookshelfEmpty";
+import { BookshelfOverflow } from "@/src/components/lists/BookshelfOverflow";
 import {
   SHELF_DISPLAY_LIMIT,
   SHELF_POSES,
-} from "@/src/components/profile/bookshelf-poses";
-import type { CurrentlyReadingBook } from "@/src/types/list";
+} from "@/src/components/lists/bookshelf-poses";
+import type { ListBook } from "@/src/types/list";
 
 export interface BookshelfProps {
-  books: CurrentlyReadingBook[];
+  books: ListBook[];
+  listName?: string;
 }
 
-export function Bookshelf({ books }: BookshelfProps) {
+export function Bookshelf({ books, listName }: BookshelfProps) {
+  if (books.length === 0) {
+    return <BookshelfEmpty listName={listName} />;
+  }
+
   const overflowCount = Math.max(0, books.length - SHELF_DISPLAY_LIMIT);
   const visibleBooks = books.slice(0, SHELF_DISPLAY_LIMIT);
   const slotCount = overflowCount > 0 ? SHELF_DISPLAY_LIMIT + 1 : visibleBooks.length;
@@ -32,11 +38,6 @@ export function Bookshelf({ books }: BookshelfProps) {
             count={overflowCount}
             pose={SHELF_POSES[SHELF_DISPLAY_LIMIT] ?? SHELF_POSES[0]!}
           />
-        ) : null}
-        {slotCount === 0 ? (
-          <p className="pb-6 text-center text-sm text-[var(--color-muted)]">
-            Nothing on your shelf yet. Search for a book to get started.
-          </p>
         ) : null}
       </div>
       {slotCount > 0 ? <div className="bookshelf-ledge" aria-hidden="true" /> : null}

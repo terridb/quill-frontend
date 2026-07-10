@@ -1,7 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
+import type { ShelfPose } from "@/src/components/lists/bookshelf-poses";
 import { getBookPath } from "@/src/lib/books/book-path";
-import type { ShelfPose } from "@/src/components/profile/bookshelf-poses";
 
 export interface BookshelfCoverProps {
   bookId: string;

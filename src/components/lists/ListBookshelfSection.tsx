@@ -1,9 +1,14 @@
-import { Bookshelf } from "@/src/components/profile/Bookshelf";
-import { FutureNavLink } from "@/src/components/profile/FutureNavLink";
-import type { CurrentlyReadingBook } from "@/src/types/list";
+import Link from "next/link";
+import { Bookshelf } from "@/src/components/lists/Bookshelf";
+import { ListPrivacyIcon } from "@/src/components/lists/ListPrivacyIcon";
+import type { ListBook } from "@/src/types/list";
 
-export interface CurrentlyReadingSectionProps {
-  books: CurrentlyReadingBook[];
+export interface ListBookshelfSectionProps {
+  title: string;
+  isPrivate: boolean;
+  books: ListBook[];
+  seeAllHref: string;
+  headingId: string;
   isLoading?: boolean;
   isError?: boolean;
   onRetry?: () => void;
@@ -29,27 +34,39 @@ function BookshelfSkeleton() {
   );
 }
 
-export function CurrentlyReadingSection({
+export function ListBookshelfSection({
+  title,
+  isPrivate,
   books,
+  seeAllHref,
+  headingId,
   isLoading = false,
   isError = false,
   onRetry,
-}: CurrentlyReadingSectionProps) {
+}: ListBookshelfSectionProps) {
   const count = books.length;
 
   return (
-    <section aria-labelledby="currently-reading-heading">
+    <section aria-labelledby={headingId} className="mb-10 md:mb-12">
       <div className="mb-6 flex items-baseline justify-between gap-4 md:mb-8">
         <h2
-          id="currently-reading-heading"
+          id={headingId}
           className="text-display text-balance text-xl tracking-tight text-[var(--color-ink)] md:text-[1.55rem]"
         >
-          <span>Currently Reading</span>
+          <span className="inline-flex items-center gap-2">
+            <ListPrivacyIcon isPrivate={isPrivate} />
+            <span>{title}</span>
+          </span>
           <span className="ml-4 align-middle text-[0.8em] font-medium tracking-[0.08em] text-[var(--color-accent)]">
             {count}
           </span>
         </h2>
-        <FutureNavLink label="See all ›" />
+        <Link
+          href={seeAllHref}
+          className="focus-ring shrink-0 text-sm text-[var(--color-accent)] underline-offset-2 hover:underline"
+        >
+          See all ›
+        </Link>
       </div>
 
       {isLoading ? <BookshelfSkeleton /> : null}
@@ -57,7 +74,7 @@ export function CurrentlyReadingSection({
       {!isLoading && isError ? (
         <div className="rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-6 text-center">
           <p className="text-sm text-[var(--color-ink-secondary)]">
-            Couldn&apos;t load your shelf. Check your connection and try again.
+            Couldn&apos;t load this shelf. Check your connection and try again.
           </p>
           {onRetry ? (
             <button
@@ -71,7 +88,7 @@ export function CurrentlyReadingSection({
         </div>
       ) : null}
 
-      {!isLoading && !isError ? <Bookshelf books={books} /> : null}
+      {!isLoading && !isError ? <Bookshelf books={books} listName={title} /> : null}
     </section>
   );
 }

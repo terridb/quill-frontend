@@ -1,4 +1,4 @@
-import type { ShelfPose } from "@/src/components/profile/bookshelf-poses";
+import type { ShelfPose } from "@/src/components/lists/bookshelf-poses";
 
 export interface BookshelfOverflowProps {
   count: number;
