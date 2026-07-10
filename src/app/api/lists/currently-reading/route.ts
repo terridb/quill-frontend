@@ -12,8 +12,8 @@ export async function GET() {
   }
 
   try {
-    const books = await getCurrentlyReading(user.id);
-    return Response.json({ books });
+    const { listId, books } = await getCurrentlyReading(user.id);
+    return Response.json({ listId, books });
   } catch {
     return Response.json(
       { error: "Unable to load currently reading list" },

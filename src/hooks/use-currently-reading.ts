@@ -2,24 +2,25 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { listKeys } from "@/src/hooks/list-keys";
-import type { CurrentlyReadingBook } from "@/src/types/list";
+import type { ListBook } from "@/src/types/list";
 
 interface CurrentlyReadingResponse {
-  books: CurrentlyReadingBook[];
+  listId: string | null;
+  isPrivate: boolean;
+  books: ListBook[];
 }
 
-async function fetchCurrentlyReading(): Promise<CurrentlyReadingBook[]> {
+async function fetchCurrentlyReading(): Promise<CurrentlyReadingResponse> {
   const response = await fetch("/api/lists/currently-reading");
 
   if (!response.ok) {
     throw new Error("Unable to load currently reading list");
   }
 
-  const data = (await response.json()) as CurrentlyReadingResponse;
-  return data.books;
+  return (await response.json()) as CurrentlyReadingResponse;
 }
 
-export function useCurrentlyReading(initialData?: CurrentlyReadingBook[]) {
+export function useCurrentlyReading(initialData?: CurrentlyReadingResponse) {
   return useQuery({
     queryKey: listKeys.currentlyReading(),
     queryFn: fetchCurrentlyReading,
