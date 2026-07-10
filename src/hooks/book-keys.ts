@@ -5,4 +5,6 @@ export const bookKeys = {
     [...bookKeys.all, "detail", bookId] as const,
   status: (bookId: string) =>
     [...bookKeys.all, "status", bookId] as const,
+  library: (bookId: string) =>
+    [...bookKeys.all, "library", bookId] as const,
 };

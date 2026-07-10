@@ -1,20 +1,10 @@
 import { cache } from "react";
-import { DEFAULT_LIST_NAMES } from "@/src/lib/lists/default-list-order";
 import { entriesToListBooks } from "@/src/lib/lists/entries-to-list-books";
 import { getListEntries } from "@/src/lib/lists/get-list-entries";
 import { getUserLists } from "@/src/lib/lists/get-user-lists";
+import { sortDefaultLists } from "@/src/lib/lists/sort-default-lists";
 import { createClient } from "@/src/lib/supabase/server";
 import type { List, ListsOverview, ListWithBooks } from "@/src/types/list";
-
-function sortDefaultLists(lists: List[]): List[] {
-  const order = new Map(DEFAULT_LIST_NAMES.map((name, index) => [name, index]));
-
-  return lists.toSorted((a, b) => {
-    const aIndex = order.get(a.name as (typeof DEFAULT_LIST_NAMES)[number]) ?? 999;
-    const bIndex = order.get(b.name as (typeof DEFAULT_LIST_NAMES)[number]) ?? 999;
-    return aIndex - bIndex;
-  });
-}
 
 async function getListsOverviewUncached(userId: string): Promise<ListsOverview> {
   const supabase = await createClient();
