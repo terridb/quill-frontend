@@ -11,9 +11,10 @@ import type { Profile } from "@/src/types/profile";
 export interface NavUserMenuProps {
   profile: Profile | null;
   email: string;
+  showListsLink?: boolean;
 }
 
-export function NavUserMenu({ profile, email }: NavUserMenuProps) {
+export function NavUserMenu({ profile, email, showListsLink = false }: NavUserMenuProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [isSigningOut, setIsSigningOut] = useState(false);
   const menuId = useId();
@@ -79,6 +80,18 @@ export function NavUserMenu({ profile, email }: NavUserMenuProps) {
           role="menu"
           className="absolute top-full right-0 z-50 mt-2 min-w-[10rem] overflow-hidden rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] py-1 shadow-[var(--shadow-md)]"
         >
+          {showListsLink ? (
+            <li role="none" className="md:hidden">
+              <Link
+                href="/lists"
+                role="menuitem"
+                className="focus-ring block px-4 py-2.5 text-sm text-[var(--color-ink)] transition-colors hover:bg-[var(--color-accent-soft)]"
+                onClick={() => setIsOpen(false)}
+              >
+                Lists
+              </Link>
+            </li>
+          ) : null}
           <li role="none">
             <Link
               href="/profile"

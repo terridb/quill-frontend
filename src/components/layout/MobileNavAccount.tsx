@@ -22,5 +22,5 @@ export function MobileNavAccount() {
     return null;
   }
 
-  return <NavUserMenu profile={profile ?? null} email={email} />;
+  return <NavUserMenu profile={profile ?? null} email={email} showListsLink />;
 }
