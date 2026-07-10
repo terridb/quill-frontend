@@ -1,115 +1,129 @@
 "use client";
 
-import { useEffect, useId, useRef, useState } from "react";
-import { ChevronDownIcon } from "@/src/components/ui/icons";
-import { useBookStatus } from "@/src/hooks/use-book-status";
-import { isOutsideElement } from "@/src/lib/dom/safe-event-target";
 import {
-  READING_STATUS_LABELS,
-  type ReadingStatus,
-} from "@/src/types/book";
+  createContext,
+  useContext,
+  useMemo,
+  useState,
+  type ReactNode,
+} from "react";
+import { BookLibraryDialog } from "@/src/components/book/BookLibraryDialog";
+import { ChevronDownIcon } from "@/src/components/ui/icons";
+import { useBookLibrary } from "@/src/hooks/use-book-library";
+import { READING_STATUS_LABELS } from "@/src/types/book";
 
-const STATUS_OPTIONS: ReadingStatus[] = [
-  "want_to_read",
-  "currently_reading",
-  "finished",
-  "did_not_finish",
-];
+interface BookStatusActionContextValue {
+  openDialog: () => void;
+  isOpen: boolean;
+  isLoading: boolean;
+  buttonLabel: string;
+  isDisabled: boolean;
+}
+
+const BookStatusActionContext = createContext<BookStatusActionContextValue | null>(
+  null,
+);
+
+function useBookStatusActionContext() {
+  const context = useContext(BookStatusActionContext);
+
+  if (!context) {
+    throw new Error("BookStatusAction components must be used within BookStatusAction");
+  }
+
+  return context;
+}
 
 export interface BookStatusActionProps {
   bookId: string;
+  children: ReactNode;
+}
+
+export function BookStatusAction({ bookId, children }: BookStatusActionProps) {
+  const [isOpen, setIsOpen] = useState(false);
+  const {
+    library,
+    isLoading,
+    isInLibrary,
+    saveLibrary,
+    isSaving,
+  } = useBookLibrary(bookId);
+
+  const buttonLabel = isInLibrary && library?.readingStatus
+    ? READING_STATUS_LABELS[library.readingStatus]
+    : isInLibrary
+      ? "In your library"
+      : "Add to library";
+
+  const contextValue = useMemo<BookStatusActionContextValue>(
+    () => ({
+      openDialog: () => {
+        if (!isLoading && library) {
+          setIsOpen(true);
+        }
+      },
+      isOpen,
+      isLoading,
+      buttonLabel,
+      isDisabled: isLoading || !library,
+    }),
+    [buttonLabel, isLoading, isOpen, library],
+  );
+
+  return (
+    <BookStatusActionContext.Provider value={contextValue}>
+      {children}
+      <BookLibraryDialog
+        library={library}
+        isOpen={isOpen}
+        isSaving={isSaving}
+        onClose={() => setIsOpen(false)}
+        onSave={async (input) => {
+          await saveLibrary(input);
+        }}
+        onRemoveFromLibrary={async () => {
+          await saveLibrary({
+            readingStatus: null,
+            customListIds: [],
+            removeFromLibrary: true,
+          });
+        }}
+      />
+    </BookStatusActionContext.Provider>
+  );
+}
+
+export interface BookStatusActionTriggerProps {
   className?: string;
 }
 
-export function BookStatusAction({
-  bookId,
-  className = "",
-}: BookStatusActionProps) {
-  const { status, setStatus } = useBookStatus(bookId);
-  const [isOpen, setIsOpen] = useState(false);
-  const menuId = useId();
-  const containerRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (!isOpen) {
-      return;
-    }
-
-    const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
-        setIsOpen(false);
-      }
-    };
-
-    const onPointerDown = (event: MouseEvent) => {
-      if (containerRef.current && isOutsideElement(containerRef.current, event)) {
-        setIsOpen(false);
-      }
-    };
-
-    document.addEventListener("keydown", onKeyDown);
-    document.addEventListener("mousedown", onPointerDown);
-
-    return () => {
-      document.removeEventListener("keydown", onKeyDown);
-      document.removeEventListener("mousedown", onPointerDown);
-    };
-  }, [isOpen]);
-
-  const selectStatus = (next: ReadingStatus) => {
-    setStatus(next);
-    setIsOpen(false);
-  };
+export function BookStatusActionTrigger({ className = "" }: BookStatusActionTriggerProps) {
+  const { openDialog, isOpen, isLoading, buttonLabel, isDisabled } =
+    useBookStatusActionContext();
 
   return (
-    <div
-      ref={containerRef}
-      className={`relative mx-auto mt-5 w-full max-w-sm md:mx-0 ${className}`}
-    >
+    <div className={`relative mx-auto w-full max-w-sm md:mx-0 ${className}`}>
       <div className="flex">
         <button
           type="button"
-          className="focus-ring flex-1 rounded-l-xl bg-[var(--color-accent)] px-4 py-3 text-sm font-medium text-[var(--color-surface)]"
-          onClick={() => selectStatus(status)}
+          className="focus-ring flex-1 rounded-l-xl bg-[var(--color-accent)] px-4 py-3 text-sm font-medium text-[var(--color-surface)] disabled:opacity-60"
+          onClick={openDialog}
+          disabled={isDisabled}
         >
-          {READING_STATUS_LABELS[status]}
+          {isLoading ? "Loading…" : buttonLabel}
         </button>
         <button
           type="button"
-          className="focus-ring rounded-r-xl border-l border-[var(--color-surface)]/25 bg-[var(--color-accent)] px-3 py-3 text-[var(--color-surface)]"
-          aria-haspopup="menu"
+          className="focus-ring rounded-r-xl border-l border-[var(--color-surface)]/25 bg-[var(--color-accent)] px-3 py-3 text-[var(--color-surface)] disabled:opacity-60"
+          aria-haspopup="dialog"
           aria-expanded={isOpen}
-          aria-controls={menuId}
-          onClick={() => setIsOpen((prev) => !prev)}
+          onClick={openDialog}
+          disabled={isDisabled}
         >
           <ChevronDownIcon className="h-4 w-4" />
-          <span className="sr-only">Change reading status</span>
+          <span className="sr-only">Manage library lists</span>
         </button>
       </div>
-      {isOpen ? (
-        <ul
-          id={menuId}
-          role="menu"
-          className="absolute top-full right-0 left-0 z-10 mt-2 overflow-hidden rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] py-1 shadow-[var(--shadow-md)]"
-        >
-          {STATUS_OPTIONS.map((option) => (
-            <li key={option} role="none">
-              <button
-                type="button"
-                role="menuitem"
-                className={`focus-ring w-full px-4 py-2.5 text-left text-sm transition-colors hover:bg-[var(--color-accent-soft)] ${
-                  option === status
-                    ? "font-medium text-[var(--color-accent)]"
-                    : "text-[var(--color-ink)]"
-                }`}
-                onClick={() => selectStatus(option)}
-              >
-                {READING_STATUS_LABELS[option]}
-              </button>
-            </li>
-          ))}
-        </ul>
-      ) : null}
     </div>
   );
 }

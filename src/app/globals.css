@@ -1,4 +1,4 @@
-@import "tailwindcss";
+﻿@import "tailwindcss";
 
 @theme {
   --color-bg: #f6f4f0;
@@ -382,4 +382,23 @@ button:disabled {
     width: 100%;
     animation: none;
   }
+}
+
+.book-library-dialog {
+  position: fixed;
+  inset: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  max-height: none;
+  overflow: hidden;
+  background: transparent;
+  transform: none;
+}
+
+.book-library-dialog::backdrop {
+  background: rgb(0 0 0 / 40%);
 }
