@@ -20,7 +20,26 @@ export interface ListEntry {
   addedAt: string;
 }
 
-export interface CurrentlyReadingBook extends RelatedBook {
+export interface ListBook extends RelatedBook {
   entryId: string;
   addedAt: string;
+}
+
+/** @deprecated Use ListBook */
+export type CurrentlyReadingBook = ListBook;
+
+export interface ListWithBooks extends List {
+  books: ListBook[];
+  entryCount: number;
+}
+
+export interface ListsOverview {
+  defaultLists: ListWithBooks[];
+  customLists: ListWithBooks[];
+}
+
+export interface ListDetail {
+  list: List;
+  books: ListBook[];
+  isOwner: boolean;
 }

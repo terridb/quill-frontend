@@ -1,0 +1,30 @@
+import { getListDetail } from "@/src/lib/lists/get-list-detail";
+import { createClient } from "@/src/lib/supabase/server";
+
+export async function GET(
+  _request: Request,
+  context: { params: Promise<{ id: string }> },
+) {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    return Response.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const { id } = await context.params;
+
+  try {
+    const detail = await getListDetail(user.id, id);
+
+    if (!detail) {
+      return Response.json({ error: "List not found" }, { status: 404 });
+    }
+
+    return Response.json(detail);
+  } catch {
+    return Response.json({ error: "Unable to load list" }, { status: 500 });
+  }
+}
