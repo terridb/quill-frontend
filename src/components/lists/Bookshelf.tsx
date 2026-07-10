@@ -1,10 +1,11 @@
+"use client";
+
+import { useRef } from "react";
 import { BookshelfCover } from "@/src/components/lists/BookshelfCover";
 import { BookshelfEmpty } from "@/src/components/lists/BookshelfEmpty";
 import { BookshelfOverflow } from "@/src/components/lists/BookshelfOverflow";
-import {
-  SHELF_DISPLAY_LIMIT,
-  SHELF_POSES,
-} from "@/src/components/lists/bookshelf-poses";
+import { SHELF_POSES } from "@/src/components/lists/bookshelf-poses";
+import { useShelfLayout } from "@/src/hooks/use-shelf-layout";
 import type { ListBook } from "@/src/types/list";
 
 export interface BookshelfProps {
@@ -13,17 +14,29 @@ export interface BookshelfProps {
 }
 
 export function Bookshelf({ books, listName }: BookshelfProps) {
+  const rowRef = useRef<HTMLDivElement>(null);
+  const { visibleCount, spineWidth, gap, overflowCount, minHeight } = useShelfLayout(
+    books.length,
+    rowRef,
+  );
+
   if (books.length === 0) {
     return <BookshelfEmpty listName={listName} />;
   }
 
-  const overflowCount = Math.max(0, books.length - SHELF_DISPLAY_LIMIT);
-  const visibleBooks = books.slice(0, SHELF_DISPLAY_LIMIT);
-  const slotCount = overflowCount > 0 ? SHELF_DISPLAY_LIMIT + 1 : visibleBooks.length;
+  const visibleBooks = books.slice(0, visibleCount);
+  const slotCount = overflowCount > 0 ? visibleCount + 1 : visibleBooks.length;
 
   return (
     <div className="bookshelf">
-      <div className="flex min-h-[8.5rem] items-end justify-center gap-2 px-2 pb-1 sm:gap-3 md:min-h-[11rem] md:justify-start md:gap-4 md:px-0">
+      <div
+        ref={rowRef}
+        className="flex w-full items-end justify-start pb-0.5"
+        style={{
+          gap,
+          minHeight,
+        }}
+      >
         {visibleBooks.map((book, index) => (
           <BookshelfCover
             key={book.entryId}
@@ -31,12 +44,14 @@ export function Bookshelf({ books, listName }: BookshelfProps) {
             title={book.title}
             coverUrl={book.coverUrl}
             pose={SHELF_POSES[index] ?? SHELF_POSES[0]!}
+            spineWidth={spineWidth}
           />
         ))}
         {overflowCount > 0 ? (
           <BookshelfOverflow
             count={overflowCount}
-            pose={SHELF_POSES[SHELF_DISPLAY_LIMIT] ?? SHELF_POSES[0]!}
+            pose={SHELF_POSES[visibleCount] ?? SHELF_POSES[0]!}
+            spineWidth={spineWidth}
           />
         ) : null}
       </div>

@@ -4,13 +4,28 @@ export interface ShelfPose {
   y: number;
 }
 
-export const SHELF_POSES: ShelfPose[] = [
-  { rotate: -5, scale: 0.92, y: 4 },
-  { rotate: 2, scale: 1, y: 0 },
-  { rotate: -2, scale: 0.96, y: 2 },
-  { rotate: 4, scale: 1.04, y: -2 },
-  { rotate: -3, scale: 0.98, y: 1 },
-  { rotate: 1, scale: 0.94, y: 3 },
-];
+/** Upright, uniform spines — variation comes from covers and the ledge, not tilt. */
+export const SHELF_POSE_DEFAULT: ShelfPose = {
+  rotate: 0,
+  scale: 1,
+  y: 0,
+};
 
-export const SHELF_DISPLAY_LIMIT = 5;
+export const SHELF_POSES: ShelfPose[] = Array.from(
+  { length: 20 },
+  () => SHELF_POSE_DEFAULT,
+);
+
+export function shelfSpineStyle(pose: ShelfPose = SHELF_POSE_DEFAULT) {
+  const hasTransform =
+    pose.rotate !== 0 || pose.scale !== 1 || pose.y !== 0;
+
+  if (!hasTransform) {
+    return { transformOrigin: "bottom center" } as const;
+  }
+
+  return {
+    transform: `rotate(${pose.rotate}deg) scale(${pose.scale}) translateY(${pose.y}px)`,
+    transformOrigin: "bottom center",
+  } as const;
+}

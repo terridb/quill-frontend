@@ -1,18 +1,19 @@
-import type { ShelfPose } from "@/src/components/lists/bookshelf-poses";
+import { shelfSpineStyle, type ShelfPose } from "@/src/components/lists/bookshelf-poses";
 
 export interface BookshelfOverflowProps {
   count: number;
   pose: ShelfPose;
+  spineWidth: number;
 }
 
-export function BookshelfOverflow({ count, pose }: BookshelfOverflowProps) {
+export function BookshelfOverflow({ count, pose, spineWidth }: BookshelfOverflowProps) {
   return (
     <div
       aria-hidden="true"
-      className="flex w-[3.5rem] shrink-0 items-end sm:w-[4rem] md:w-[4.5rem]"
+      className="bookshelf-spine flex shrink-0 items-end"
       style={{
-        transform: `rotate(${pose.rotate}deg) scale(${pose.scale}) translateY(${pose.y}px)`,
-        transformOrigin: "bottom center",
+        ...shelfSpineStyle(pose),
+        width: spineWidth,
       }}
     >
       <div className="flex aspect-[2/3] w-full items-center justify-center rounded-md border border-dashed border-[var(--color-border)] bg-[var(--color-accent-soft)] shadow-[var(--shadow-cover)]">

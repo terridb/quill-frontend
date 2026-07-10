@@ -179,6 +179,12 @@ button:disabled {
   }
 }
 
+.bookshelf {
+  min-width: 0;
+  max-width: 100%;
+  overflow-x: clip;
+}
+
 .bookshelf-ledge {
   margin-top: 0.25rem;
   height: 0.5rem;
@@ -189,6 +195,20 @@ button:disabled {
     transparent
   );
   box-shadow: 0 4px 12px #14141312;
+}
+
+.bookshelf-spine {
+  transform-origin: bottom center;
+}
+
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  .bookshelf-spine {
+    transition: transform 200ms ease;
+  }
+
+  a.bookshelf-spine:hover {
+    transform: translateY(-2px);
+  }
 }
 
 @media (min-width: 48rem) {

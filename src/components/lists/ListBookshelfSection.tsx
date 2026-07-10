@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Bookshelf } from "@/src/components/lists/Bookshelf";
+import { BookshelfSkeleton } from "@/src/components/lists/BookshelfSkeleton";
 import { ListPrivacyIcon } from "@/src/components/lists/ListPrivacyIcon";
 import type { ListBook } from "@/src/types/list";
 
@@ -12,26 +13,6 @@ export interface ListBookshelfSectionProps {
   isLoading?: boolean;
   isError?: boolean;
   onRetry?: () => void;
-}
-
-function BookshelfSkeleton() {
-  return (
-    <div className="bookshelf" aria-hidden="true">
-      <div className="flex min-h-[8.5rem] items-end justify-center gap-2 px-2 pb-1 sm:gap-3 md:min-h-[9.5rem]">
-        {Array.from({ length: 5 }, (_, index) => (
-          <div
-            key={index}
-            className="aspect-[2/3] w-[3.5rem] shrink-0 animate-pulse rounded-md bg-[var(--color-fill)] sm:w-[4rem] md:w-[4.5rem]"
-            style={{
-              transform: `rotate(${index % 2 === 0 ? -3 : 2}deg)`,
-              transformOrigin: "bottom center",
-            }}
-          />
-        ))}
-      </div>
-      <div className="bookshelf-ledge" />
-    </div>
-  );
 }
 
 export function ListBookshelfSection({
@@ -47,15 +28,15 @@ export function ListBookshelfSection({
   const count = books.length;
 
   return (
-    <section aria-labelledby={headingId} className="mb-10 md:mb-12">
-      <div className="mb-6 flex items-baseline justify-between gap-4 md:mb-8">
+    <section aria-labelledby={headingId} className="mb-10 min-w-0 md:mb-12">
+      <div className="mb-6 flex min-w-0 items-baseline justify-between gap-4 md:mb-8">
         <h2
           id={headingId}
-          className="text-display text-balance text-xl tracking-tight text-[var(--color-ink)] md:text-[1.55rem]"
+          className="text-display min-w-0 text-balance text-xl tracking-tight text-[var(--color-ink)] md:text-[1.55rem]"
         >
-          <span className="inline-flex items-center gap-2">
-            <ListPrivacyIcon isPrivate={isPrivate} />
-            <span>{title}</span>
+          <span className="inline-flex min-w-0 items-center gap-2">
+            <ListPrivacyIcon isPrivate={isPrivate} className="shrink-0" />
+            <span className="truncate">{title}</span>
           </span>
           <span className="ml-4 align-middle text-[0.8em] font-medium tracking-[0.08em] text-[var(--color-accent)]">
             {count}

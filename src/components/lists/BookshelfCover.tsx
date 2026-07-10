@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import type { ShelfPose } from "@/src/components/lists/bookshelf-poses";
+import { shelfSpineStyle, type ShelfPose } from "@/src/components/lists/bookshelf-poses";
 import { getBookPath } from "@/src/lib/books/book-path";
 
 export interface BookshelfCoverProps {
@@ -8,6 +8,7 @@ export interface BookshelfCoverProps {
   title: string;
   coverUrl: string | null;
   pose: ShelfPose;
+  spineWidth: number;
 }
 
 export function BookshelfCover({
@@ -15,14 +16,17 @@ export function BookshelfCover({
   title,
   coverUrl,
   pose,
+  spineWidth,
 }: BookshelfCoverProps) {
+  const spineWidthPx = Math.round(spineWidth);
+
   return (
     <Link
       href={getBookPath(bookId, title)}
-      className="focus-ring block w-[3.5rem] shrink-0 motion-safe:transition-transform motion-safe:duration-200 motion-safe:hover:-translate-y-0.5 sm:w-[4rem] md:w-[4.5rem]"
+      className="bookshelf-spine focus-ring block shrink-0"
       style={{
-        transform: `rotate(${pose.rotate}deg) scale(${pose.scale}) translateY(${pose.y}px)`,
-        transformOrigin: "bottom center",
+        ...shelfSpineStyle(pose),
+        width: spineWidth,
       }}
       title={title}
     >
@@ -32,7 +36,7 @@ export function BookshelfCover({
             src={coverUrl}
             alt=""
             fill
-            sizes="(max-width: 640px) 56px, 72px"
+            sizes={`${spineWidthPx}px`}
             className="object-cover"
           />
         ) : (

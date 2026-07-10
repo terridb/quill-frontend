@@ -14,7 +14,7 @@ export function ListsOverviewPage({ initialOverview }: ListsOverviewPageProps) {
   const overview = data ?? initialOverview;
 
   return (
-    <div>
+    <div className="min-w-0">
       <h1 className="text-display mb-10 text-2xl tracking-tight text-[var(--color-ink)] md:mb-12 md:text-3xl">
         Your lists
       </h1>
