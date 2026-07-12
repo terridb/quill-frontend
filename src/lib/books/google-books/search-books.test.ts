@@ -44,7 +44,23 @@ describe("mapGoogleBooksSearchVolumes", () => {
         title: "Fourth Wing",
         authors: "Rebecca Yarros",
         coverUrl: null,
+        language: null,
       },
     ]);
+  });
+
+  it("includes language metadata when available", () => {
+    const results = mapGoogleBooksSearchVolumes([
+      {
+        id: "nl-book",
+        volumeInfo: {
+          title: "De ontdekking van de hemel",
+          authors: ["Harry Mulisch"],
+          language: "nl",
+        },
+      },
+    ]);
+
+    expect(results[0]?.language).toBe("nl");
   });
 });

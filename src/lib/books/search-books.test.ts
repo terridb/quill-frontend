@@ -8,6 +8,7 @@ function makeResult(bookId: string): BookSearchResult {
     title: `Title ${bookId}`,
     authors: "Author",
     coverUrl: null,
+    language: null,
   };
 }
 

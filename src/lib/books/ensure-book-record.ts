@@ -1,8 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
-import { googleBooksFetch } from "@/src/lib/books/google-books/client";
-import { isUserFacingBook } from "@/src/lib/books/google-books/is-user-facing-book";
+import { fetchGoogleVolume } from "@/src/lib/books/google-books/fetch-google-volume";
 import { mapVolumeToBookRow } from "@/src/lib/books/map-volume-to-book-row";
-import { googleBooksVolumeSchema } from "@/src/lib/books/google-books/schemas";
 import type { Database } from "@/src/types/database";
 
 export interface BookRecordRef {
@@ -12,36 +10,13 @@ export interface BookRecordRef {
 
 type TypedSupabaseClient = SupabaseClient<Database>;
 
-async function fetchGoogleVolume(apiId: string) {
-  let response: Response;
-
-  try {
-    response = await googleBooksFetch(`/volumes/${encodeURIComponent(apiId)}`);
-  } catch {
-    throw new Error("Unable to reach Google Books");
-  }
-
-  if (!response.ok) {
-    throw new Error("Book not found");
-  }
-
-  const json: unknown = await response.json();
-  const parsed = googleBooksVolumeSchema.safeParse(json);
-
-  if (!parsed.success || !isUserFacingBook(parsed.data)) {
-    throw new Error("Book not found");
-  }
-
-  return parsed.data;
-}
-
 export async function ensureBookRecord(
   supabase: TypedSupabaseClient,
   apiId: string,
 ): Promise<BookRecordRef> {
   const { data: existing, error: lookupError } = await supabase
     .from("books")
-    .select("id, api_id")
+    .select("id, api_id, language")
     .eq("api_id", apiId)
     .maybeSingle();
 
@@ -50,6 +25,18 @@ export async function ensureBookRecord(
   }
 
   if (existing) {
+    if (!existing.language) {
+      const volume = await fetchGoogleVolume(apiId);
+      const row = mapVolumeToBookRow(volume);
+
+      if (row.language) {
+        await supabase
+          .from("books")
+          .update({ language: row.language })
+          .eq("id", existing.id);
+      }
+    }
+
     return { id: existing.id, apiId: existing.api_id };
   }
 

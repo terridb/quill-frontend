@@ -3,6 +3,7 @@ import type {
   BookSearchResult,
   RelatedBook,
 } from "@/src/types/book";
+import { getVolumeLanguage } from "@/src/lib/books/google-books/is-recommendable-volume";
 import { normalizeCategories } from "@/src/lib/books/google-books/normalize-categories";
 import { normalizeDescription } from "@/src/lib/books/google-books/normalize-description";
 import { pickCoverUrl } from "@/src/lib/books/google-books/pick-cover-url";
@@ -20,6 +21,7 @@ export function mapVolumeToSearchResult(volume: GoogleBooksVolume): BookSearchRe
     title: volumeInfo.title ?? "Untitled",
     authors: formatAuthors(volumeInfo.authors),
     coverUrl: pickCoverUrl(volumeInfo.imageLinks),
+    language: getVolumeLanguage(volume),
   };
 }
 
@@ -56,6 +58,7 @@ export function mapVolumeToBookDetail(
     coverUrl: pickCoverUrl(volumeInfo.imageLinks),
     numberOfPages:
       typeof pageCount === "number" && pageCount > 0 ? pageCount : null,
+    language: getVolumeLanguage(volume),
     relatedBooks,
     authorBooks,
   };

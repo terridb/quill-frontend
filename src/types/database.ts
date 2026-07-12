@@ -46,6 +46,7 @@ export type Database = {
           genres: string[] | null;
           id: string;
           isbn: string | null;
+          language: string | null;
           page_count: number | null;
           published_date: string | null;
           shelf_count: number;
@@ -61,6 +62,7 @@ export type Database = {
           genres?: string[] | null;
           id?: string;
           isbn?: string | null;
+          language?: string | null;
           page_count?: number | null;
           published_date?: string | null;
           shelf_count?: number;
@@ -76,6 +78,7 @@ export type Database = {
           genres?: string[] | null;
           id?: string;
           isbn?: string | null;
+          language?: string | null;
           page_count?: number | null;
           published_date?: string | null;
           shelf_count?: number;
@@ -204,6 +207,7 @@ export type Database = {
           api_id: string;
           author: string | null;
           cover_url: string | null;
+          language: string | null;
           score: number;
           title: string;
         }[];

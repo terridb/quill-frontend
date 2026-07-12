@@ -18,6 +18,7 @@ export function mapBookRowToBookDetail(
       typeof row.page_count === "number" && row.page_count > 0
         ? row.page_count
         : null,
+    language: row.language,
     relatedBooks,
     authorBooks,
   };

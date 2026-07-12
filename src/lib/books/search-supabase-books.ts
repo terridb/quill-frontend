@@ -23,5 +23,6 @@ export async function searchSupabaseBooks(
     title: row.title,
     authors: row.author ?? "Unknown author",
     coverUrl: row.cover_url,
+    language: row.language,
   }));
 }

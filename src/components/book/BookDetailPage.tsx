@@ -2,6 +2,7 @@ import type { BookDetail } from "@/src/types/book";
 import { AuthorBooks } from "@/src/components/book/AuthorBooks";
 import { BookCover } from "@/src/components/book/BookCover";
 import { BookDescription } from "@/src/components/book/BookDescription";
+import { BookLanguage } from "@/src/components/book/BookLanguage";
 import { BookPageCount } from "@/src/components/book/BookPageCount";
 import {
   BookStatusAction,
@@ -35,6 +36,7 @@ export function BookDetailPage({ book }: BookDetailPageProps) {
             {book.title}
           </h1>
           <p className="mt-2 text-sm text-[var(--color-muted)]">{book.authors}</p>
+          <BookLanguage language={book.language} />
           <GenreChipList
             labels={book.genreLabels}
             className="justify-center md:justify-start"

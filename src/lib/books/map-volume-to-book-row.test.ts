@@ -17,6 +17,7 @@ function makeVolume(): GoogleBooksVolume {
         thumbnail: "http://books.google.com/thumb.jpg",
       },
       industryIdentifiers: [{ type: "ISBN_13", identifier: "978-0-441-47812-5" }],
+      language: "en",
     },
   };
 }
@@ -34,6 +35,7 @@ describe("mapVolumeToBookRow", () => {
       page_count: 304,
       published_date: "1969-01-01",
       isbn: "978-0-441-47812-5",
+      language: "en",
     });
     expect(row.genres).toContain("Science Fiction");
     expect(row.tags).toBeNull();

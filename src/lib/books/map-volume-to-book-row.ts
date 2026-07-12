@@ -1,3 +1,4 @@
+import { getVolumeLanguage } from "@/src/lib/books/google-books/is-recommendable-volume";
 import { normalizeCategories } from "@/src/lib/books/google-books/normalize-categories";
 import { normalizeDescription } from "@/src/lib/books/google-books/normalize-description";
 import {
@@ -56,5 +57,6 @@ export function mapVolumeToBookRow(volume: GoogleBooksVolume): TablesInsert<"boo
       typeof pageCount === "number" && pageCount > 0 ? pageCount : null,
     published_date: parsePublishedDate(volumeInfo.publishedDate),
     isbn: pickIsbn13(volumeInfo.industryIdentifiers),
+    language: getVolumeLanguage(volume),
   };
 }

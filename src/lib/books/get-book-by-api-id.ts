@@ -11,7 +11,7 @@ export async function getBookByApiId(
   const { data, error } = await supabase
     .from("books")
     .select(
-      "id, api_id, title, author, cover_url, description, genres, tags, page_count, published_date, isbn, shelf_count, created_at",
+      "id, api_id, title, author, cover_url, description, genres, tags, page_count, published_date, isbn, language, shelf_count, created_at",
     )
     .eq("api_id", apiId)
     .maybeSingle();

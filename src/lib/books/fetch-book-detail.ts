@@ -4,7 +4,9 @@ import { getBookByApiId } from "@/src/lib/books/get-book-by-api-id";
 import { mapBookRowToBookDetail } from "@/src/lib/books/map-book-row-to-detail";
 import type { BookExclusion } from "@/src/lib/books/google-books/book-exclusion";
 import { fetchAuthorGoogleBooks } from "@/src/lib/books/google-books/fetch-author-books";
+import { fetchGoogleVolume } from "@/src/lib/books/google-books/fetch-google-volume";
 import { fetchRelatedGoogleBooks } from "@/src/lib/books/google-books/fetch-related-books";
+import { getVolumeLanguage } from "@/src/lib/books/google-books/is-recommendable-volume";
 import type { BookKind } from "@/src/lib/books/google-books/book-kind";
 import {
   fetchGoogleBookDetail,
@@ -43,26 +45,42 @@ async function fetchBookDetailUncached(apiId: string): Promise<BookDetail> {
   const cachedBook = await getBookByApiId(supabase, apiId);
 
   if (cachedBook) {
-    const genreLabels = cachedBook.genres ?? [];
-    const subjectTags = cachedBook.tags ?? [];
-    const primaryAuthor = cachedBook.author?.split(",")[0]?.trim() ?? null;
-    const exclusion = buildExclusion(cachedBook.api_id, cachedBook.isbn);
+    let book = cachedBook;
+
+    if (!book.language) {
+      try {
+        const volume = await fetchGoogleVolume(apiId);
+        const language = getVolumeLanguage(volume);
+
+        if (language) {
+          await supabase.from("books").update({ language }).eq("id", book.id);
+          book = { ...book, language };
+        }
+      } catch {
+        // Continue without language when Google Books is unavailable.
+      }
+    }
+
+    const genreLabels = book.genres ?? [];
+    const subjectTags = book.tags ?? [];
+    const primaryAuthor = book.author?.split(",")[0]?.trim() ?? null;
+    const exclusion = buildExclusion(book.api_id, book.isbn);
 
     const [relatedBooks, authorBooks] = await Promise.all([
       fetchRelatedGoogleBooks({
         genreLabels,
         subjectTags,
         exclusion,
-        language: null,
+        language: book.language,
         sourceBookKind: getBookKindFromGenres(genreLabels),
         excludeAuthor: primaryAuthor,
       }),
       primaryAuthor
-        ? fetchAuthorGoogleBooks(primaryAuthor, exclusion, null)
+        ? fetchAuthorGoogleBooks(primaryAuthor, exclusion, book.language)
         : Promise.resolve([]),
     ]);
 
-    return mapBookRowToBookDetail(cachedBook, relatedBooks, authorBooks);
+    return mapBookRowToBookDetail(book, relatedBooks, authorBooks);
   }
 
   return fetchGoogleBookDetail(apiId);
