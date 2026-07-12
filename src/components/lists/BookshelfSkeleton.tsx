@@ -17,7 +17,7 @@ export function BookshelfSkeleton() {
     <div className="bookshelf" aria-hidden="true">
       <div
         ref={rowRef}
-        className="flex w-full items-end justify-start pb-0.5"
+        className="flex w-full items-end justify-start pt-2.5 pb-0.5"
         style={{ gap, minHeight }}
       >
         {Array.from({ length: visibleCount }, (_, index) => (

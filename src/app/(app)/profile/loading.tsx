@@ -13,7 +13,7 @@ export default function ProfileLoading() {
           <div className="h-4 w-16 rounded bg-[var(--color-fill)]" />
         </div>
         <div className="bookshelf" aria-hidden="true">
-          <div className="flex min-h-[8.25rem] items-end justify-center gap-2 px-0 pb-0.5 sm:min-h-[9.5rem] sm:gap-2.5 md:min-h-[11rem]">
+          <div className="flex min-h-[8.25rem] items-end justify-center gap-2 px-0 pt-2.5 pb-0.5 sm:min-h-[9.5rem] sm:gap-2.5 md:min-h-[11rem]">
             {Array.from({ length: 3 }, (_, index) => (
               <div
                 key={index}

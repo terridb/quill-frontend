@@ -28,9 +28,9 @@ export function BookshelfCover({
         ...shelfSpineStyle(pose),
         width: spineWidth,
       }}
-      title={title}
+      aria-label={title}
     >
-      <div className="relative aspect-[2/3] w-full overflow-hidden rounded-md bg-[var(--color-fill)] shadow-[var(--shadow-cover)]">
+      <div className="bookshelf-spine-cover relative aspect-[2/3] w-full overflow-hidden rounded-md bg-[var(--color-fill)]">
         {coverUrl ? (
           <Image
             src={coverUrl}

@@ -31,7 +31,7 @@ export function Bookshelf({ books, listName }: BookshelfProps) {
     <div className="bookshelf">
       <div
         ref={rowRef}
-        className="flex w-full items-end justify-start pb-0.5"
+        className="flex w-full items-end justify-start pt-2.5 pb-0.5"
         style={{
           gap,
           minHeight,
