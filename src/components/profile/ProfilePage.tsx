@@ -36,7 +36,7 @@ export function ProfilePage({
       <aside className="md:sticky md:top-[calc(var(--header-offset)+1rem)] md:self-start">
         <ProfileHeader
           username={activeProfile.username}
-          avatarUrl={activeProfile.avatar_url}
+          avatarUrl={activeProfile.avatar_url ?? ""}
           isEditing={isEditing}
           onEdit={() => setIsEditing(true)}
           onCancelEdit={() => setIsEditing(false)}

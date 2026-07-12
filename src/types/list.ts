@@ -13,11 +13,18 @@ export interface List {
 export interface ListEntry {
   id: string;
   listId: string;
-  apiId: string;
+  bookId: string;
   currentPage: number | null;
   startedAt: string | null;
   finishedAt: string | null;
   addedAt: string;
+}
+
+export interface ListEntryWithBook extends ListEntry {
+  apiId: string;
+  title: string;
+  authors: string;
+  coverUrl: string | null;
 }
 
 export interface ListBook extends RelatedBook {

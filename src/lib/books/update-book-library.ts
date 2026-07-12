@@ -1,11 +1,16 @@
-import { z } from "zod";
 import type { SupabaseClient } from "@supabase/supabase-js";
+import {
+  ensureBookRecord,
+  getBookIdByApiId,
+} from "@/src/lib/books/ensure-book-record";
 import {
   listNameToReadingStatus,
   readingStatusToListName,
 } from "@/src/lib/lists/reading-status-map";
 import { getUserLists } from "@/src/lib/lists/get-user-lists";
 import type { UpdateBookLibraryInput } from "@/src/types/book-library";
+import type { Database } from "@/src/types/database";
+import { z } from "zod";
 
 export const updateBookLibrarySchema = z.object({
   readingStatus: z
@@ -15,10 +20,12 @@ export const updateBookLibrarySchema = z.object({
   removeFromLibrary: z.boolean().optional(),
 });
 
+type TypedSupabaseClient = SupabaseClient<Database>;
+
 export async function updateBookLibrary(
-  supabase: SupabaseClient,
+  supabase: TypedSupabaseClient,
   userId: string,
-  bookId: string,
+  apiId: string,
   input: UpdateBookLibraryInput,
 ): Promise<void> {
   const userLists = await getUserLists(supabase, userId);
@@ -29,16 +36,37 @@ export async function updateBookLibrary(
   }
 
   if (input.removeFromLibrary) {
+    const internalBookId = await getBookIdByApiId(supabase, apiId);
+
+    if (!internalBookId) {
+      return;
+    }
+
     const { error } = await supabase
       .from("list_entries")
       .delete()
-      .eq("api_id", bookId)
+      .eq("book_id", internalBookId)
       .in("list_id", listIds);
 
     if (error) {
       throw new Error("Unable to update library");
     }
 
+    return;
+  }
+
+  const willAddToAnyList =
+    input.readingStatus !== null || input.customListIds.length > 0;
+
+  const bookRecord = willAddToAnyList
+    ? await ensureBookRecord(supabase, apiId)
+    : null;
+
+  const internalBookId = bookRecord
+    ? bookRecord.id
+    : await getBookIdByApiId(supabase, apiId);
+
+  if (!internalBookId) {
     return;
   }
 
@@ -50,7 +78,7 @@ export async function updateBookLibrary(
   const { data: currentEntries, error: fetchError } = await supabase
     .from("list_entries")
     .select("id, list_id")
-    .eq("api_id", bookId)
+    .eq("book_id", internalBookId)
     .in("list_id", listIds);
 
   if (fetchError || !currentEntries) {
@@ -62,7 +90,7 @@ export async function updateBookLibrary(
   );
 
   const deleteIds: string[] = [];
-  const inserts: { list_id: string; api_id: string }[] = [];
+  const inserts: { list_id: string; book_id: string }[] = [];
 
   const currentDefaultList = defaultLists.find((list) => currentByListId.has(list.id));
   const currentStatus = currentDefaultList
@@ -82,7 +110,7 @@ export async function updateBookLibrary(
       const targetList = defaultLists.find((list) => list.name === targetName);
 
       if (targetList) {
-        inserts.push({ list_id: targetList.id, api_id: bookId });
+        inserts.push({ list_id: targetList.id, book_id: internalBookId });
       }
     }
   }
@@ -94,7 +122,7 @@ export async function updateBookLibrary(
     const shouldHave = desiredCustomSet.has(list.id);
 
     if (shouldHave && !hasEntry) {
-      inserts.push({ list_id: list.id, api_id: bookId });
+      inserts.push({ list_id: list.id, book_id: internalBookId });
     } else if (!shouldHave && hasEntry) {
       const entryId = currentByListId.get(list.id);
       if (entryId) {

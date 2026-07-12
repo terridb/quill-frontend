@@ -15,6 +15,7 @@ describe("isProfileComplete", () => {
       username: "reader",
       avatar_url: "",
       setup_complete: false,
+      created_at: null,
     };
     expect(isProfileComplete(profile)).toBe(false);
   });
@@ -25,6 +26,7 @@ describe("isProfileComplete", () => {
       username: "reader",
       avatar_url: "",
       setup_complete: true,
+      created_at: null,
     };
     expect(isProfileComplete(profile)).toBe(true);
   });
