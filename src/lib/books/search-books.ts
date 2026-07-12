@@ -25,8 +25,10 @@ export function mergeSearchResults(
 
 export async function searchBooks(query: string): Promise<BookSearchResult[]> {
   const supabase = await createClient();
-  const local = await searchSupabaseBooks(supabase, query, RESULT_LIMIT);
-  const remote = await searchGoogleBooks(query);
+  const [local, remote] = await Promise.all([
+    searchSupabaseBooks(supabase, query, RESULT_LIMIT),
+    searchGoogleBooks(query),
+  ]);
 
   return mergeSearchResults(local, remote);
 }
