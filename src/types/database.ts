@@ -49,6 +49,7 @@ export type Database = {
           language: string | null;
           page_count: number | null;
           published_date: string | null;
+          search_document: unknown;
           shelf_count: number;
           tags: string[] | null;
           title: string;
@@ -65,6 +66,7 @@ export type Database = {
           language?: string | null;
           page_count?: number | null;
           published_date?: string | null;
+          search_document?: unknown;
           shelf_count?: number;
           tags?: string[] | null;
           title: string;
@@ -81,6 +83,7 @@ export type Database = {
           language?: string | null;
           page_count?: number | null;
           published_date?: string | null;
+          search_document?: unknown;
           shelf_count?: number;
           tags?: string[] | null;
           title?: string;
@@ -186,6 +189,41 @@ export type Database = {
         };
         Relationships: [];
       };
+      reading_logs: {
+        Row: {
+          created_at: string;
+          id: string;
+          list_entry_id: string;
+          logged_date: string;
+          pages_read: number;
+          user_id: string;
+        };
+        Insert: {
+          created_at?: string;
+          id?: string;
+          list_entry_id: string;
+          logged_date?: string;
+          pages_read?: number;
+          user_id: string;
+        };
+        Update: {
+          created_at?: string;
+          id?: string;
+          list_entry_id?: string;
+          logged_date?: string;
+          pages_read?: number;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "reading_logs_list_entry_id_fkey";
+            columns: ["list_entry_id"];
+            isOneToOne: false;
+            referencedRelation: "list_entries";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
     };
     Views: {
       [_ in never]: never;
@@ -212,6 +250,8 @@ export type Database = {
           title: string;
         }[];
       };
+      show_limit: { Args: never; Returns: number };
+      show_trgm: { Args: { "": string }; Returns: string[] };
     };
     Enums: {
       [_ in never]: never;

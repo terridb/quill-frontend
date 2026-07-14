@@ -34,12 +34,14 @@ type ListEntryRow = {
         title: string;
         author: string | null;
         cover_url: string | null;
+        page_count?: number | null;
       }
     | {
         api_id: string;
         title: string;
         author: string | null;
         cover_url: string | null;
+        page_count?: number | null;
       }[]
     | null;
 };
@@ -63,5 +65,6 @@ export function mapListEntryRow(data: ListEntryRow): ListEntryWithBook | null {
     title: book.title,
     authors: book.author ?? "Unknown author",
     coverUrl: book.cover_url,
+    pageCount: book.page_count ?? null,
   };
 }

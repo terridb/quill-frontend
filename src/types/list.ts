@@ -25,6 +25,7 @@ export interface ListEntryWithBook extends ListEntry {
   title: string;
   authors: string;
   coverUrl: string | null;
+  pageCount?: number | null;
 }
 
 export interface ListBook extends RelatedBook {
