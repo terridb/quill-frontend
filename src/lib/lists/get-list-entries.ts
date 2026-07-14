@@ -24,7 +24,8 @@ export async function getListEntries(
         api_id,
         title,
         author,
-        cover_url
+        cover_url,
+        page_count
       )
     `,
     )
