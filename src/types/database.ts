@@ -25,7 +25,7 @@ export type Database = {
           id?: string;
           prompt: string;
           recommendation?: string | null;
-          user_id?: string;
+          user_id: string;
         };
         Update: {
           created_at?: string;

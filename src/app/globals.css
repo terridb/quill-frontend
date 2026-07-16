@@ -37,6 +37,29 @@ body {
   overflow-x: clip;
 }
 
+/* Chat route: lock document scroll; only the message pane scrolls */
+html[data-ai-chat="true"],
+html[data-ai-chat="true"] body {
+  height: 100%;
+  overflow: hidden;
+  overscroll-behavior: none;
+  touch-action: manipulation;
+}
+
+html[data-ai-chat="true"] .app-shell {
+  overflow-x: hidden;
+}
+
+html[data-ai-chat="true"] .app-shell-main {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  overscroll-behavior: none;
+  padding-top: 0;
+  padding-bottom: 0;
+  min-width: 0;
+}
+
 button {
   cursor: pointer;
 }
@@ -821,9 +844,33 @@ button:disabled {
   }
 }
 
+@keyframes recommend-promo-in {
+  from {
+    opacity: 0;
+    transform: translateY(0.5rem);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.recommend-promo {
+  animation: recommend-promo-in 420ms ease-out both;
+}
+
+.ai-chat-header,
+.ai-chat-empty {
+  animation: recommend-promo-in 380ms ease-out both;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .reading-week-pip,
-  .reading-book-nav-btn {
+  .reading-book-nav-btn,
+  .recommend-promo,
+  .ai-chat-header,
+  .ai-chat-empty {
     transition: none;
+    animation: none;
   }
 }

@@ -1,12 +1,13 @@
 import { MobileNav } from "@/src/components/layout/MobileNav";
 import { NavAccount } from "@/src/components/layout/NavAccount";
+import { NavAiChatLink } from "@/src/components/layout/NavAiChatLink";
 import { NavBrandLink } from "@/src/components/layout/NavBrandLink";
 import { NavListsLink } from "@/src/components/layout/NavListsLink";
 import { NavSearch } from "@/src/components/layout/NavSearch";
 
 export function PrimaryNav() {
   return (
-    <header className="sticky top-0 z-30 border-b border-[var(--color-border)] bg-[var(--color-surface)]/95 backdrop-blur-lg">
+    <header className="sticky top-0 z-30 shrink-0 border-b border-[var(--color-border)] bg-[var(--color-surface)]/95 backdrop-blur-lg">
       <div className="md:hidden">
         <MobileNav />
       </div>
@@ -16,6 +17,7 @@ export function PrimaryNav() {
           <NavSearch />
         </div>
         <div className="flex items-center gap-3">
+          <NavAiChatLink />
           <NavListsLink />
           <NavAccount />
         </div>
