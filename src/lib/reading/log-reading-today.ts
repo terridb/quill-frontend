@@ -27,6 +27,7 @@ export async function logReadingToday(
     throw new Error("List entry not found");
   }
 
+  // Do not overwrite pages_read if a log already exists for this day.
   const { error } = await supabase.from("reading_logs").upsert(
     {
       user_id: userId,
@@ -34,7 +35,10 @@ export async function logReadingToday(
       list_entry_id: input.entryId,
       pages_read: 0,
     },
-    { onConflict: "user_id,logged_date,list_entry_id" },
+    {
+      onConflict: "user_id,logged_date,list_entry_id",
+      ignoreDuplicates: true,
+    },
   );
 
   if (error) {

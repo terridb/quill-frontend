@@ -34,7 +34,15 @@ export async function updateListEntryProgress(
   }
 
   const previousPage = entry.currentPage ?? 0;
-  const pagesRead = Math.max(0, input.currentPage - previousPage);
+  const pagesDelta = Math.max(0, input.currentPage - previousPage);
+
+  const existingLogPromise = supabase
+    .from("reading_logs")
+    .select("pages_read")
+    .eq("user_id", userId)
+    .eq("logged_date", loggedDate)
+    .eq("list_entry_id", entryId)
+    .maybeSingle();
 
   if (input.pageCount !== undefined) {
     const { error: bookError } = await supabase
@@ -55,6 +63,19 @@ export async function updateListEntryProgress(
   if (updateError) {
     throw new Error("Unable to update progress");
   }
+
+  const { data: existingLog, error: existingLogError } =
+    await existingLogPromise;
+
+  if (existingLogError) {
+    throw new Error("Unable to update reading log");
+  }
+
+  // Sum deltas when the same book is logged more than once on the same day.
+  const pagesRead = Math.min(
+    MAX_SMALLINT,
+    (existingLog?.pages_read ?? 0) + pagesDelta,
+  );
 
   const { error: logError } = await supabase.from("reading_logs").upsert(
     {
