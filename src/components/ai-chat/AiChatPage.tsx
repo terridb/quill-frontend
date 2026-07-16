@@ -22,10 +22,20 @@ import {
 } from "@/src/components/ai-chat/ChatMessageText";
 import { ToolApprovalCard } from "@/src/components/ai-chat/ToolApprovalCard";
 import {
+  collectConversationBooks,
+  collectConversationListNames,
   extractBookMentions,
   getForbiddenApprovalReason,
   getToolApprovalCopy,
+  groupPendingApprovals,
+  messageHasActiveLookup,
+  mergeBookMentions,
+  resolveBooksForApiIds,
 } from "@/src/components/ai-chat/tool-ui-helpers";
+import {
+  filterToAllowedApiIds,
+  resolveReferentialAddApiIds,
+} from "@/src/lib/ai/recommendation-scope";
 import { listKeys } from "@/src/hooks/list-keys";
 import { bookKeys } from "@/src/hooks/book-keys";
 import { readingKeys } from "@/src/hooks/reading-keys";
@@ -40,7 +50,7 @@ const WRITE_TOOLS = new Set([
 const BOOK_CARD_TOOLS = new Set(["search_books", "get_book_details"]);
 
 function collectMessageBooks(message: UIMessage): ChatBookMention[] {
-  const byApiId = new Map<string, ChatBookMention>();
+  const collected: ChatBookMention[] = [];
 
   for (const part of message.parts) {
     if (!isToolUIPart(part) || part.state !== "output-available") {
@@ -49,17 +59,10 @@ function collectMessageBooks(message: UIMessage): ChatBookMention[] {
     if (!BOOK_CARD_TOOLS.has(getToolName(part))) {
       continue;
     }
-
-    for (const book of extractBookMentions(part.output)) {
-      const existing = byApiId.get(book.apiId);
-      // Prefer detail payloads (they include description / better metadata).
-      if (!existing || book.description) {
-        byApiId.set(book.apiId, book);
-      }
-    }
+    collected.push(...extractBookMentions(part.output));
   }
 
-  return [...byApiId.values()];
+  return mergeBookMentions(collected);
 }
 
 function ForbiddenApprovalNotice({
@@ -89,15 +92,45 @@ function ForbiddenApprovalNotice({
 
 function MessageParts({
   message,
+  messages,
   addToolApprovalResponse,
 }: {
   message: UIMessage;
+  messages: UIMessage[];
   addToolApprovalResponse: (response: {
     id: string;
     approved: boolean;
   }) => void;
 }) {
   const books = collectMessageBooks(message);
+  const catalog = collectConversationBooks(messages);
+  const listNames = collectConversationListNames(messages);
+  const referentialApiIds = resolveReferentialAddApiIds(messages);
+  const approvalGroups = groupPendingApprovals(message)
+    .map((group) => {
+      if (
+        group.toolName !== "add_books_to_list" ||
+        referentialApiIds.length === 0
+      ) {
+        return group;
+      }
+      return {
+        ...group,
+        apiIds: filterToAllowedApiIds(group.apiIds, referentialApiIds),
+      };
+    })
+    .filter((group) => {
+      if (
+        group.toolName === "add_books_to_list" &&
+        referentialApiIds.length > 0
+      ) {
+        return group.apiIds.length > 0;
+      }
+      return true;
+    });
+  const showLookup = messageHasActiveLookup(message);
+  let renderedApprovals = false;
+  let renderedDenied = false;
 
   return (
     <div className="min-w-0 max-w-full space-y-3 overflow-x-hidden">
@@ -116,46 +149,70 @@ function MessageParts({
           return null;
         }
 
-        const toolName = getToolName(part);
-        const key = `${message.id}-${part.toolCallId}`;
-
         if (part.state === "approval-requested" && part.approval) {
-          const input =
-            part.input && typeof part.input === "object"
-              ? (part.input as Record<string, unknown>)
-              : {};
-          const forbiddenReason = getForbiddenApprovalReason(toolName, input);
-
-          if (forbiddenReason) {
-            return (
-              <ForbiddenApprovalNotice
-                key={key}
-                approvalId={part.approval.id}
-                reason={forbiddenReason}
-                addToolApprovalResponse={addToolApprovalResponse}
-              />
-            );
+          if (renderedApprovals) {
+            return null;
           }
+          renderedApprovals = true;
 
-          const copy = getToolApprovalCopy(toolName, input);
           return (
-            <ToolApprovalCard
-              key={key}
-              title={copy.title}
-              description={copy.description}
-              onConfirm={() =>
-                addToolApprovalResponse({
-                  id: part.approval.id,
-                  approved: true,
-                })
-              }
-              onCancel={() =>
-                addToolApprovalResponse({
-                  id: part.approval.id,
-                  approved: false,
-                })
-              }
-            />
+            <div key={`${message.id}-approvals`} className="space-y-3">
+              {approvalGroups.map((group) => {
+                const forbiddenReason = getForbiddenApprovalReason(
+                  group.toolName,
+                  group.input,
+                );
+
+                if (forbiddenReason) {
+                  return group.approvalIds.map((approvalId) => (
+                    <ForbiddenApprovalNotice
+                      key={approvalId}
+                      approvalId={approvalId}
+                      reason={forbiddenReason}
+                      addToolApprovalResponse={addToolApprovalResponse}
+                    />
+                  ));
+                }
+
+                const groupBooks = resolveBooksForApiIds(
+                  group.apiIds,
+                  catalog,
+                );
+                const listName = group.listId
+                  ? (listNames.get(group.listId) ?? null)
+                  : null;
+                const copy = getToolApprovalCopy(group.toolName, group.input, {
+                  books: groupBooks,
+                  listName,
+                  bookCount: group.apiIds.length || groupBooks.length,
+                });
+
+                return (
+                  <ToolApprovalCard
+                    key={group.approvalIds.join("-")}
+                    title={copy.title}
+                    description={copy.description}
+                    books={groupBooks}
+                    onConfirm={() => {
+                      for (const approvalId of group.approvalIds) {
+                        addToolApprovalResponse({
+                          id: approvalId,
+                          approved: true,
+                        });
+                      }
+                    }}
+                    onCancel={() => {
+                      for (const approvalId of group.approvalIds) {
+                        addToolApprovalResponse({
+                          id: approvalId,
+                          approved: false,
+                        });
+                      }
+                    }}
+                  />
+                );
+              })}
+            </div>
           );
         }
 
@@ -166,27 +223,34 @@ function MessageParts({
         }
 
         if (part.state === "output-denied") {
+          if (renderedDenied) {
+            return null;
+          }
+          renderedDenied = true;
           return (
-            <p key={key} className="text-sm text-[var(--color-muted)]">
+            <p key={`${message.id}-denied`} className="text-sm text-[var(--color-muted)]">
               Change canceled.
             </p>
           );
         }
 
+        // In-progress tool calls: one shared status line (see below).
         if (
           part.state === "input-streaming" ||
           part.state === "input-available" ||
           part.state === "approval-responded"
         ) {
-          return (
-            <p key={key} className="text-label">
-              Looking things up…
-            </p>
-          );
+          return null;
         }
 
         return null;
       })}
+
+      {showLookup ? (
+        <p key={`${message.id}-lookup`} className="text-label">
+          Looking things up…
+        </p>
+      ) : null}
     </div>
   );
 }
@@ -314,6 +378,7 @@ export function AiChatPage() {
             </p>
             <MessageParts
               message={message}
+              messages={messages}
               addToolApprovalResponse={addToolApprovalResponse}
             />
           </article>

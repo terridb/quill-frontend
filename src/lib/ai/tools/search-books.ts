@@ -22,7 +22,9 @@ export function createSearchBooksTool(ctx: AiToolContext) {
         .min(1)
         .max(10)
         .optional()
-        .describe("Max results to return. Defaults to 8, max 10."),
+        .describe(
+          "Max results to return. Defaults to 5, max 10. Prefer 5 for author recommendation searches to avoid unused extras.",
+        ),
       language: z
         .string()
         .trim()
@@ -47,7 +49,7 @@ export function createSearchBooksTool(ctx: AiToolContext) {
     }),
     execute: async ({
       query,
-      maxResults = 8,
+      maxResults = 5,
       language,
       excludeApiIds,
       excludeBookKeys,

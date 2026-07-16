@@ -63,7 +63,11 @@ export async function POST(request: Request) {
   const messages = parsed.data.messages as UIMessage[];
   const recentMessages = messages.slice(-MAX_MESSAGES);
 
-  const tools = createChatTools({ supabase, userId: user.id });
+  const tools = createChatTools({
+    supabase,
+    userId: user.id,
+    messages: recentMessages,
+  });
 
   const result = streamText({
     model: openai("gpt-4o-mini"),

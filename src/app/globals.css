@@ -864,6 +864,24 @@ button:disabled {
   animation: recommend-promo-in 380ms ease-out both;
 }
 
+/* Overlapped covers on multi-book shelf approvals — shelf-edge stack */
+.approval-cover-stack__item {
+  transition: transform 160ms ease;
+}
+
+.approval-cover-stack:hover .approval-cover-stack__item:nth-child(1) {
+  transform: translateY(-1px);
+}
+.approval-cover-stack:hover .approval-cover-stack__item:nth-child(2) {
+  transform: translateY(-2px);
+}
+.approval-cover-stack:hover .approval-cover-stack__item:nth-child(3) {
+  transform: translateY(-3px);
+}
+.approval-cover-stack:hover .approval-cover-stack__item:nth-child(n + 4) {
+  transform: translateY(-3px);
+}
+
 @media (prefers-reduced-motion: reduce) {
   .reading-week-pip,
   .reading-book-nav-btn,
@@ -872,5 +890,11 @@ button:disabled {
   .ai-chat-empty {
     transition: none;
     animation: none;
+  }
+
+  .approval-cover-stack__item,
+  .approval-cover-stack:hover .approval-cover-stack__item {
+    transition: none;
+    transform: none;
   }
 }

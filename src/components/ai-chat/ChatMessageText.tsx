@@ -95,6 +95,16 @@ function extractItemTitle(itemText: string): string {
   return (bySplit ?? itemText).replace(/^[*_]+|[*_]+$/g, "").trim();
 }
 
+/** Reason after "Title by Author — …" when a cover card already shows the title. */
+function extractItemReason(itemText: string): string | null {
+  const parts = itemText.split(/\s+[—–-]\s+/);
+  if (parts.length < 2) {
+    return null;
+  }
+  const reason = parts.slice(1).join(" — ").trim();
+  return reason || null;
+}
+
 function matchBook(
   itemText: string,
   books: ChatBookMention[],
@@ -249,7 +259,13 @@ export function ChatMessageText({
                   <span className="font-medium text-[var(--color-ink-secondary)]">
                     {itemIndex + 1}.{" "}
                   </span>
-                  {renderInline(item, `rec-${blockKey}-${itemIndex}`)}
+                  {(() => {
+                    const reason = book ? extractItemReason(item) : null;
+                    return renderInline(
+                      reason ?? item,
+                      `rec-${blockKey}-${itemIndex}`,
+                    );
+                  })()}
                 </p>
               </div>
             );

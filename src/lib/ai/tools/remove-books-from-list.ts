@@ -11,14 +11,16 @@ import { getUserLists } from "@/src/lib/lists/get-user-lists";
 export function createRemoveBooksFromListTool(ctx: AiToolContext) {
   return tool({
     description:
-      "Remove books from one of this user's custom lists or Want To Read. Requires user confirmation. Never use for Currently Reading, Finished, or Did Not Finish — refuse those requests instead of creating a substitute list.",
+      "Remove one or more books from a custom list or Want To Read in a single call. Put every Google Books volume id in apiIds (max 10) — never call this tool once per book when the user asked to remove several. Requires one user confirmation for the whole batch. Never use for Currently Reading, Finished, or Did Not Finish — refuse those requests instead of creating a substitute list.",
     inputSchema: z.object({
       listId: z.string().uuid(),
       apiIds: z
         .array(z.string().trim().min(1))
         .min(1)
         .max(10)
-        .describe("Google Books volume ids to remove"),
+        .describe(
+          "All Google Books volume ids to remove in this one call (not one id per tool call)",
+        ),
     }),
     needsApproval: true,
     execute: async ({ listId, apiIds }) => {
