@@ -1,5 +1,5 @@
 import { googleBooksFetch } from "@/src/lib/books/google-books/client";
-import { isUserFacingBook } from "@/src/lib/books/google-books/is-user-facing-book";
+import { isListedBookVolume } from "@/src/lib/books/google-books/is-user-facing-book";
 import { googleBooksVolumeSchema } from "@/src/lib/books/google-books/schemas";
 import type { GoogleBooksVolume } from "@/src/lib/books/google-books/schemas";
 
@@ -21,7 +21,7 @@ export async function fetchGoogleVolume(
   const json: unknown = await response.json();
   const parsed = googleBooksVolumeSchema.safeParse(json);
 
-  if (!parsed.success || !isUserFacingBook(parsed.data)) {
+  if (!parsed.success || !isListedBookVolume(parsed.data)) {
     throw new Error("Book not found");
   }
 
