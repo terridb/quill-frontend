@@ -12,7 +12,7 @@ export function PrimaryNav() {
         <MobileNav />
       </div>
       <div className="mx-auto hidden h-[var(--header-height)] max-w-5xl items-center gap-8 px-6 md:flex">
-        <NavBrandLink className="focus-ring text-display shrink-0 text-[1.65rem] leading-none tracking-tight text-[var(--color-ink)]" />
+        <NavBrandLink className="focus-ring shrink-0" />
         <div className="flex-1">
           <NavSearch />
         </div>

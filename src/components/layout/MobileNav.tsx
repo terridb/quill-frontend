@@ -71,7 +71,7 @@ export function MobileNav() {
 
         <div className="flex justify-center">
           <NavBrandLink
-            className="focus-ring text-display text-[1.65rem] leading-none tracking-tight text-[var(--color-ink)]"
+            className="focus-ring"
             onNavigate={collapseSearch}
           />
         </div>

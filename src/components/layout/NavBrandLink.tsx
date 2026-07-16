@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { QuillLogo } from "@/src/components/ui/QuillLogo";
 import { useSearch } from "@/src/providers/search-provider";
 
 export interface NavBrandLinkProps {
@@ -30,7 +31,7 @@ export function NavBrandLink({ className, onNavigate }: NavBrandLinkProps) {
       onClick={handleClick}
       aria-label="Go to homepage"
     >
-      Quill
+      <QuillLogo decorative className="h-10 w-auto text-[var(--color-accent)]" />
     </Link>
   );
 }
