@@ -12,6 +12,7 @@ import {
   FlameIcon,
 } from "@/src/components/ui/icons";
 import { useReadingTracker } from "@/src/hooks/use-reading-tracker";
+import { getBookPath } from "@/src/lib/books/book-path";
 import type { ReadingTrackerData, TrackerBook } from "@/src/types/reading-tracker";
 
 export interface CurrentlyReadingTrackerProps {
@@ -21,7 +22,7 @@ export interface CurrentlyReadingTrackerProps {
 function TrackerCover({ book }: { book: TrackerBook }) {
   return (
     <Link
-      href={`/books/${book.bookId}`}
+      href={getBookPath(book.bookId, book.title)}
       aria-label={book.title}
       className="reading-cover-anchor focus-ring"
     >
