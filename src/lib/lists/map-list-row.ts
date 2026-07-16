@@ -1,4 +1,4 @@
-import type { List, ListEntry } from "@/src/types/list";
+import type { List, ListEntryWithBook } from "@/src/types/list";
 
 export function mapListRow(data: {
   id: string;
@@ -20,22 +20,51 @@ export function mapListRow(data: {
   };
 }
 
-export function mapListEntryRow(data: {
+type ListEntryRow = {
   id: string;
   list_id: string;
-  api_id: string;
+  book_id: string;
   current_page: number | null;
   started_at: string | null;
   finished_at: string | null;
   added_at: string;
-}): ListEntry {
+  books:
+    | {
+        api_id: string;
+        title: string;
+        author: string | null;
+        cover_url: string | null;
+        page_count?: number | null;
+      }
+    | {
+        api_id: string;
+        title: string;
+        author: string | null;
+        cover_url: string | null;
+        page_count?: number | null;
+      }[]
+    | null;
+};
+
+export function mapListEntryRow(data: ListEntryRow): ListEntryWithBook | null {
+  const book = Array.isArray(data.books) ? data.books[0] : data.books;
+
+  if (!book) {
+    return null;
+  }
+
   return {
     id: data.id,
     listId: data.list_id,
-    apiId: data.api_id,
+    bookId: data.book_id,
     currentPage: data.current_page,
     startedAt: data.started_at,
     finishedAt: data.finished_at,
     addedAt: data.added_at,
+    apiId: book.api_id,
+    title: book.title,
+    authors: book.author ?? "Unknown author",
+    coverUrl: book.cover_url,
+    pageCount: book.page_count ?? null,
   };
 }

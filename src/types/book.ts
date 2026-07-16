@@ -3,6 +3,7 @@ export interface BookSearchResult {
   title: string;
   authors: string;
   coverUrl: string | null;
+  language: string | null;
 }
 
 export interface BookSearchResponse {
@@ -31,6 +32,7 @@ export interface BookDetail {
   subjectTags: string[];
   coverUrl: string | null;
   numberOfPages: number | null;
+  language: string | null;
   relatedBooks: RelatedBook[];
   authorBooks: RelatedBook[];
 }

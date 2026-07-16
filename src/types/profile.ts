@@ -1,6 +1,3 @@
-export interface Profile {
-  user_id: string;
-  username: string;
-  avatar_url: string;
-  setup_complete: boolean;
-}
+import type { Tables } from "@/src/types/database";
+
+export type Profile = Tables<"profiles">;

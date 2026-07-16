@@ -1,48 +1,32 @@
 import { cache } from "react";
-import { fetchBookSummaries } from "@/src/lib/books/fetch-book-summaries";
-import { getDefaultList } from "@/src/lib/lists/get-default-list";
+import { entriesToListBooks } from "@/src/lib/lists/entries-to-list-books";
+import { getListByName } from "@/src/lib/lists/get-list-by-name";
 import { getListEntries } from "@/src/lib/lists/get-list-entries";
 import { createClient } from "@/src/lib/supabase/server";
-import type { CurrentlyReadingBook } from "@/src/types/list";
+import type { ListBook } from "@/src/types/list";
+
+const CURRENTLY_READING_LIST_NAME = "Currently Reading";
+
+export interface CurrentlyReadingResult {
+  listId: string | null;
+  isPrivate: boolean;
+  books: ListBook[];
+}
 
 async function getCurrentlyReadingUncached(
   userId: string,
-): Promise<CurrentlyReadingBook[]> {
+): Promise<CurrentlyReadingResult> {
   const supabase = await createClient();
-  const defaultList = await getDefaultList(supabase, userId);
+  const list = await getListByName(supabase, userId, CURRENTLY_READING_LIST_NAME);
 
-  if (!defaultList) {
-    return [];
+  if (!list) {
+    return { listId: null, isPrivate: false, books: [] };
   }
 
-  const entries = await getListEntries(supabase, defaultList.id);
+  const entries = await getListEntries(supabase, list.id);
+  const books = await entriesToListBooks(entries);
 
-  if (entries.length === 0) {
-    return [];
-  }
-
-  const summaries = await fetchBookSummaries(entries.map((entry) => entry.apiId));
-
-  const books: CurrentlyReadingBook[] = [];
-
-  for (const entry of entries) {
-    const summary = summaries.get(entry.apiId);
-
-    if (!summary) {
-      continue;
-    }
-
-    books.push({
-      entryId: entry.id,
-      addedAt: entry.addedAt,
-      bookId: summary.bookId,
-      title: summary.title,
-      authors: summary.authors,
-      coverUrl: summary.coverUrl,
-    });
-  }
-
-  return books;
+  return { listId: list.id, isPrivate: list.isPrivate, books };
 }
 
 export const getCurrentlyReading = cache(getCurrentlyReadingUncached);

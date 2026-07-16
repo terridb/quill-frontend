@@ -1,6 +1,7 @@
 import { MobileNav } from "@/src/components/layout/MobileNav";
 import { NavAccount } from "@/src/components/layout/NavAccount";
 import { NavBrandLink } from "@/src/components/layout/NavBrandLink";
+import { NavListsLink } from "@/src/components/layout/NavListsLink";
 import { NavSearch } from "@/src/components/layout/NavSearch";
 
 export function PrimaryNav() {
@@ -14,7 +15,10 @@ export function PrimaryNav() {
         <div className="flex-1">
           <NavSearch />
         </div>
-        <NavAccount />
+        <div className="flex items-center gap-3">
+          <NavListsLink />
+          <NavAccount />
+        </div>
       </div>
     </header>
   );

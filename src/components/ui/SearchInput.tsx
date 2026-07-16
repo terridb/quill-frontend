@@ -48,7 +48,7 @@ export function SearchInput({
         role={combobox ? "combobox" : undefined}
         aria-controls={ariaControls}
         aria-expanded={combobox ? ariaExpanded : undefined}
-        className="focus-ring w-full rounded-2xl bg-transparent py-3.5 pr-11 pl-11 text-[15px] text-[var(--color-ink)] placeholder:text-[var(--color-muted)]"
+        className="search-input focus-ring w-full rounded-2xl bg-transparent py-3.5 pr-11 pl-11 text-[15px] text-[var(--color-ink)] placeholder:text-[var(--color-muted)]"
       />
       {value.length > 0 ? (
         <button

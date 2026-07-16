@@ -6,7 +6,7 @@ import { getBookExclusion } from "@/src/lib/books/google-books/book-exclusion";
 import { fetchRelatedGoogleBooks } from "@/src/lib/books/google-books/fetch-related-books";
 import { getBookKind } from "@/src/lib/books/google-books/book-kind";
 import { getVolumeLanguage } from "@/src/lib/books/google-books/is-recommendable-volume";
-import { isUserFacingBook } from "@/src/lib/books/google-books/is-user-facing-book";
+import { isListedBookVolume } from "@/src/lib/books/google-books/is-user-facing-book";
 import {
   mapVolumeToBookDetail,
 } from "@/src/lib/books/google-books/map-volume";
@@ -46,7 +46,8 @@ async function fetchGoogleBookDetailUncached(bookId: string): Promise<BookDetail
     throw new Error("Invalid volume response from Google Books");
   }
 
-  if (!isUserFacingBook(parsed.data)) {
+  // Match search listing rules: Google often omits ISBN on otherwise valid books.
+  if (!isListedBookVolume(parsed.data)) {
     throw new BookNotFoundError(bookId);
   }
 

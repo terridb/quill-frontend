@@ -7,12 +7,14 @@ function mapProfileRow(data: {
   username: string | null;
   avatar_url: string | null;
   setup_complete: boolean | null;
+  created_at: string | null;
 }): Profile {
   return {
     user_id: data.user_id,
     username: data.username ?? "",
-    avatar_url: data.avatar_url ?? "",
+    avatar_url: data.avatar_url,
     setup_complete: data.setup_complete ?? false,
+    created_at: data.created_at,
   };
 }
 
@@ -21,7 +23,7 @@ export const getCurrentProfile = cache(
     const supabase = await createClient();
     const { data, error } = await supabase
       .from("profiles")
-      .select("user_id, username, avatar_url, setup_complete")
+      .select("user_id, username, avatar_url, setup_complete, created_at")
       .eq("user_id", userId)
       .maybeSingle();
 

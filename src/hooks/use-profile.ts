@@ -17,7 +17,7 @@ async function fetchCurrentProfile(): Promise<Profile | null> {
 
   const { data, error } = await supabase
     .from("profiles")
-    .select("user_id, username, avatar_url, setup_complete")
+    .select("user_id, username, avatar_url, setup_complete, created_at")
     .eq("user_id", user.id)
     .maybeSingle();
 
@@ -28,8 +28,9 @@ async function fetchCurrentProfile(): Promise<Profile | null> {
   return {
     user_id: data.user_id,
     username: data.username ?? "",
-    avatar_url: data.avatar_url ?? "",
+    avatar_url: data.avatar_url,
     setup_complete: data.setup_complete ?? false,
+    created_at: data.created_at,
   };
 }
 

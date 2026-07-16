@@ -1,5 +1,6 @@
 import type { BookSearchResult } from "@/src/types/book";
 import { getBookPath } from "@/src/lib/books/book-path";
+import { formatBookLanguage } from "@/src/lib/books/format-book-language";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -8,6 +9,8 @@ export interface BookSearchResultItemProps {
 }
 
 export function BookSearchResultItem({ book }: BookSearchResultItemProps) {
+  const languageLabel = formatBookLanguage(book.language);
+
   return (
     <li className="border-b border-[var(--color-border)] last:border-b-0">
       <Link
@@ -34,7 +37,15 @@ export function BookSearchResultItem({ book }: BookSearchResultItemProps) {
             {book.title}
           </p>
           <p className="mt-1.5 truncate text-sm text-[var(--color-muted)] transition-colors duration-200 group-hover:text-[var(--color-ink-secondary)]">
-            {book.authors}
+            <span>{book.authors}</span>
+            {languageLabel ? (
+              <>
+                <span className="px-1 text-[var(--color-border)]" aria-hidden="true">
+                  ·
+                </span>
+                <span className="text-[var(--color-ink-secondary)]">{languageLabel}</span>
+              </>
+            ) : null}
           </p>
         </div>
       </Link>

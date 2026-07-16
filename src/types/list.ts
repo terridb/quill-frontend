@@ -13,14 +13,41 @@ export interface List {
 export interface ListEntry {
   id: string;
   listId: string;
-  apiId: string;
+  bookId: string;
   currentPage: number | null;
   startedAt: string | null;
   finishedAt: string | null;
   addedAt: string;
 }
 
-export interface CurrentlyReadingBook extends RelatedBook {
+export interface ListEntryWithBook extends ListEntry {
+  apiId: string;
+  title: string;
+  authors: string;
+  coverUrl: string | null;
+  pageCount?: number | null;
+}
+
+export interface ListBook extends RelatedBook {
   entryId: string;
   addedAt: string;
+}
+
+/** @deprecated Use ListBook */
+export type CurrentlyReadingBook = ListBook;
+
+export interface ListWithBooks extends List {
+  books: ListBook[];
+  entryCount: number;
+}
+
+export interface ListsOverview {
+  defaultLists: ListWithBooks[];
+  customLists: ListWithBooks[];
+}
+
+export interface ListDetail {
+  list: List;
+  books: ListBook[];
+  isOwner: boolean;
 }
