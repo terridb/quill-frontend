@@ -16,11 +16,14 @@ import {
   useState,
   type FormEvent,
 } from "react";
-import { BookMentionCard } from "@/src/components/ai-chat/BookMentionCard";
-import { ChatMessageText } from "@/src/components/ai-chat/ChatMessageText";
+import {
+  ChatMessageText,
+  type ChatBookMention,
+} from "@/src/components/ai-chat/ChatMessageText";
 import { ToolApprovalCard } from "@/src/components/ai-chat/ToolApprovalCard";
 import {
   extractBookMentions,
+  getForbiddenApprovalReason,
   getToolApprovalCopy,
 } from "@/src/components/ai-chat/tool-ui-helpers";
 import { listKeys } from "@/src/hooks/list-keys";
@@ -33,6 +36,57 @@ const WRITE_TOOLS = new Set([
   "remove_books_from_list",
 ]);
 
+/** Detail results preferred for covers; search fills gaps when matching recommendations. */
+const BOOK_CARD_TOOLS = new Set(["search_books", "get_book_details"]);
+
+function collectMessageBooks(message: UIMessage): ChatBookMention[] {
+  const byApiId = new Map<string, ChatBookMention>();
+
+  for (const part of message.parts) {
+    if (!isToolUIPart(part) || part.state !== "output-available") {
+      continue;
+    }
+    if (!BOOK_CARD_TOOLS.has(getToolName(part))) {
+      continue;
+    }
+
+    for (const book of extractBookMentions(part.output)) {
+      const existing = byApiId.get(book.apiId);
+      // Prefer detail payloads (they include description / better metadata).
+      if (!existing || book.description) {
+        byApiId.set(book.apiId, book);
+      }
+    }
+  }
+
+  return [...byApiId.values()];
+}
+
+function ForbiddenApprovalNotice({
+  approvalId,
+  reason,
+  addToolApprovalResponse,
+}: {
+  approvalId: string;
+  reason: string;
+  addToolApprovalResponse: (response: {
+    id: string;
+    approved: boolean;
+  }) => void;
+}) {
+  const deny = useEffectEvent(() => {
+    addToolApprovalResponse({ id: approvalId, approved: false });
+  });
+
+  useEffect(() => {
+    deny();
+  }, [approvalId]);
+
+  return (
+    <p className="text-sm text-[var(--color-muted)]">{reason}</p>
+  );
+}
+
 function MessageParts({
   message,
   addToolApprovalResponse,
@@ -43,6 +97,8 @@ function MessageParts({
     approved: boolean;
   }) => void;
 }) {
+  const books = collectMessageBooks(message);
+
   return (
     <div className="min-w-0 max-w-full space-y-3 overflow-x-hidden">
       {message.parts.map((part, index) => {
@@ -51,6 +107,7 @@ function MessageParts({
             <ChatMessageText
               key={`${message.id}-text-${index}`}
               text={part.text}
+              books={books}
             />
           );
         }
@@ -67,6 +124,19 @@ function MessageParts({
             part.input && typeof part.input === "object"
               ? (part.input as Record<string, unknown>)
               : {};
+          const forbiddenReason = getForbiddenApprovalReason(toolName, input);
+
+          if (forbiddenReason) {
+            return (
+              <ForbiddenApprovalNotice
+                key={key}
+                approvalId={part.approval.id}
+                reason={forbiddenReason}
+                addToolApprovalResponse={addToolApprovalResponse}
+              />
+            );
+          }
+
           const copy = getToolApprovalCopy(toolName, input);
           return (
             <ToolApprovalCard
@@ -89,28 +159,10 @@ function MessageParts({
           );
         }
 
+        // Book cards are interleaved with recommendation text — do not dump
+        // search grids above the answer (forces scroll-back to see covers).
         if (part.state === "output-available") {
-          const mentions = extractBookMentions(part.output);
-          if (mentions.length === 0) {
-            return null;
-          }
-
-          return (
-            <div
-              key={key}
-              className="grid min-w-0 max-w-full grid-cols-1 gap-2 overflow-x-hidden sm:grid-cols-2"
-            >
-              {mentions.slice(0, 6).map((book) => (
-                <BookMentionCard
-                  key={`${key}-${book.apiId}`}
-                  apiId={book.apiId}
-                  title={book.title}
-                  authors={book.authors}
-                  coverUrl={book.coverUrl}
-                />
-              ))}
-            </div>
-          );
+          return null;
         }
 
         if (part.state === "output-denied") {

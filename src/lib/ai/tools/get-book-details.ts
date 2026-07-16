@@ -10,7 +10,7 @@ import { truncateText } from "@/src/lib/ai/truncate";
 export function createGetBookDetailsTool() {
   return tool({
     description:
-      "Fetch catalog details for a single book by Google Books volume id (apiId). Use after search or when the user names a specific title.",
+      "Fetch catalog details for a single book by Google Books volume id (apiId). Use after search to verify relevance via description, genres, and tags before recommending. Do not call this on books already on the user's Finished, Currently Reading, Want To Read, or Did Not Finish shelves when recommending.",
     inputSchema: z.object({
       apiId: z.string().trim().min(1).describe("Google Books volume id"),
     }),

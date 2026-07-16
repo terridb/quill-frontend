@@ -11,7 +11,7 @@ import { getUserLists } from "@/src/lib/lists/get-user-lists";
 export function createAddBooksToListTool(ctx: AiToolContext) {
   return tool({
     description:
-      "Add books to one of this user's custom lists or Want To Read. Requires user confirmation. Cannot change Currently Reading, Finished, or Did Not Finish.",
+      "Add books to one of this user's custom lists or Want To Read. Requires user confirmation. Never use for Currently Reading, Finished, or Did Not Finish — refuse those requests instead of creating a substitute list.",
     inputSchema: z.object({
       listId: z.string().uuid(),
       apiIds: z

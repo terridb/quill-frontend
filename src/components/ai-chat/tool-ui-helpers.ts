@@ -1,3 +1,5 @@
+import { isReservedDefaultListName } from "@/src/lib/ai/mutable-list-guard";
+
 type ApprovalInput = Record<string, unknown>;
 
 function asStringArray(value: unknown): string[] {
@@ -5,6 +7,23 @@ function asStringArray(value: unknown): string[] {
     return [];
   }
   return value.filter((item): item is string => typeof item === "string");
+}
+
+/** Returns a reason when a pending write must be auto-denied (e.g. reserved list names). */
+export function getForbiddenApprovalReason(
+  toolName: string,
+  input: ApprovalInput,
+): string | null {
+  if (toolName !== "create_custom_list") {
+    return null;
+  }
+
+  const name = typeof input.name === "string" ? input.name.trim() : "";
+  if (!name || !isReservedDefaultListName(name)) {
+    return null;
+  }
+
+  return `“${name}” is a built-in shelf and cannot be created by Quill. Manage Currently Reading, Finished, and Did Not Finish in the app.`;
 }
 
 export function getToolApprovalCopy(
@@ -47,6 +66,7 @@ export function extractBookMentions(output: unknown): Array<{
   title: string;
   authors: string;
   coverUrl: string | null;
+  description: string | null;
 }> {
   if (!output || typeof output !== "object") {
     return [];
@@ -62,23 +82,16 @@ export function extractBookMentions(output: unknown): Array<{
         authors:
           typeof record.authors === "string" ? record.authors : "Unknown author",
         coverUrl: typeof record.coverUrl === "string" ? record.coverUrl : null,
+        description:
+          typeof record.description === "string" ? record.description : null,
       },
     ];
   }
 
+  // Only catalog search hits — never walk library `lists` / shelf `books` dumps.
   const results = record.results;
   if (Array.isArray(results)) {
     return results.flatMap((item) => extractBookMentions(item));
-  }
-
-  const books = record.books;
-  if (Array.isArray(books)) {
-    return books.flatMap((item) => extractBookMentions(item));
-  }
-
-  const lists = record.lists;
-  if (Array.isArray(lists)) {
-    return lists.flatMap((item) => extractBookMentions(item));
   }
 
   return [];

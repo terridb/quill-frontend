@@ -1,9 +1,15 @@
 import { tool } from "ai";
 import { z } from "zod";
-import { getListBooks } from "@/src/lib/lists/get-list-books";
+import {
+  collectExcludedApiIds,
+  collectExcludedBookKeys,
+  collectPreferredLanguages,
+  collectTasteAuthors,
+  loadAiLibraryLists,
+} from "@/src/lib/ai/load-library-lists";
+import type { AiToolContext } from "@/src/lib/ai/tool-context";
 import { getUserLists } from "@/src/lib/lists/get-user-lists";
 import { listNameToReadingStatus } from "@/src/lib/lists/reading-status-map";
-import type { AiToolContext } from "@/src/lib/ai/tool-context";
 
 const listFilterSchema = z.enum([
   "all",
@@ -17,7 +23,7 @@ const listFilterSchema = z.enum([
 export function createGetUserLibraryTool(ctx: AiToolContext) {
   return tool({
     description:
-      "Load this user's lists and the books on them. Use to learn reading taste, status, and what they already own.",
+      "Load this user's shelves with title, authors, genres, tags, language, and short descriptions. Returns tasteAuthors, preferredLanguages, doNotRecommendApiIds, and doNotRecommendBookKeys. Match recommendations to preferredLanguages (usually English). Never recommend excluded titles. Context only — no recommendation cards from this tool.",
     inputSchema: z.object({
       listFilter: listFilterSchema
         .optional()
@@ -40,25 +46,15 @@ export function createGetUserLibraryTool(ctx: AiToolContext) {
           return status === listFilter;
         });
 
-        const listsWithBooks = await Promise.all(
-          filtered.map(async (list) => {
-            const books = await getListBooks(ctx.supabase, list.id);
-            return {
-              id: list.id,
-              name: list.name,
-              isDefault: list.isDefault,
-              isPrivate: list.isPrivate,
-              books: books.map((book) => ({
-                apiId: book.bookId,
-                title: book.title,
-                authors: book.authors,
-                coverUrl: book.coverUrl,
-              })),
-            };
-          }),
-        );
+        const libraryLists = await loadAiLibraryLists(ctx.supabase, filtered);
 
-        return { lists: listsWithBooks };
+        return {
+          lists: libraryLists,
+          tasteAuthors: collectTasteAuthors(libraryLists).slice(0, 12),
+          preferredLanguages: collectPreferredLanguages(libraryLists),
+          doNotRecommendApiIds: collectExcludedApiIds(libraryLists),
+          doNotRecommendBookKeys: collectExcludedBookKeys(libraryLists),
+        };
       } catch {
         return { error: "Unable to load your library." };
       }

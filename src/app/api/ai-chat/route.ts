@@ -70,7 +70,7 @@ export async function POST(request: Request) {
     system: AI_CHAT_SYSTEM_PROMPT,
     messages: await convertToModelMessages(recentMessages),
     tools,
-    stopWhen: stepCountIs(12),
+    stopWhen: stepCountIs(16),
   });
 
   after(async () => {

@@ -20,15 +20,17 @@ const searchCache = new Map<
   { results: BookSearchResult[]; expiresAt: number }
 >();
 
-function normalizeSearchQuery(query: string): string {
-  return query.trim().toLowerCase();
+function normalizeSearchQuery(query: string, language?: string | null): string {
+  const lang = language?.trim().toLowerCase() ?? "";
+  return `${query.trim().toLowerCase()}|${lang}`;
 }
 
 function getCachedSearchResults(
   query: string,
+  language?: string | null,
   allowStale = false,
 ): BookSearchResult[] | null {
-  const key = normalizeSearchQuery(query);
+  const key = normalizeSearchQuery(query, language);
   const entry = searchCache.get(key);
 
   if (!entry) {
@@ -43,12 +45,16 @@ function getCachedSearchResults(
   return entry.results;
 }
 
-function setCachedSearchResults(query: string, results: BookSearchResult[]) {
+function setCachedSearchResults(
+  query: string,
+  results: BookSearchResult[],
+  language?: string | null,
+) {
   if (results.length === 0) {
     return;
   }
 
-  const key = normalizeSearchQuery(query);
+  const key = normalizeSearchQuery(query, language);
 
   if (searchCache.size >= CACHE_MAX_ENTRIES) {
     const oldestKey = searchCache.keys().next().value;
@@ -98,12 +104,17 @@ export function mapGoogleBooksSearchVolumes(
 
 async function fetchGoogleBooksSearchResponse(
   query: string,
+  language?: string | null,
 ): Promise<Response | null> {
   const params = new URLSearchParams({
     q: query,
     maxResults: String(FETCH_LIMIT),
     printType: "books",
   });
+
+  if (language?.trim()) {
+    params.set("langRestrict", language.trim().toLowerCase().split("-")[0]!);
+  }
 
   let lastResponse: Response | null = null;
 
@@ -135,26 +146,30 @@ async function fetchGoogleBooksSearchResponse(
   return lastResponse;
 }
 
-export async function searchGoogleBooks(query: string): Promise<BookSearchResult[]> {
-  const cached = getCachedSearchResults(query);
+export async function searchGoogleBooks(
+  query: string,
+  options?: { language?: string | null },
+): Promise<BookSearchResult[]> {
+  const language = options?.language ?? null;
+  const cached = getCachedSearchResults(query, language);
   if (cached) {
     return cached;
   }
 
-  const response = await fetchGoogleBooksSearchResponse(query);
+  const response = await fetchGoogleBooksSearchResponse(query, language);
 
   if (!response?.ok) {
     console.warn(
       `Google Books search failed with status ${response?.status ?? "network error"} for query "${query}"`,
     );
-    return getCachedSearchResults(query, true) ?? [];
+    return getCachedSearchResults(query, language, true) ?? [];
   }
 
   const json: unknown = await response.json();
   const results = mapGoogleBooksSearchVolumes(parseGoogleBooksSearchVolumes(json));
 
   if (results.length > 0) {
-    setCachedSearchResults(query, results);
+    setCachedSearchResults(query, results, language);
   }
 
   return results;
