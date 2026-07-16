@@ -9,7 +9,9 @@ import { after } from "next/server";
 import { z } from "zod";
 import { createChatTools } from "@/src/lib/ai/create-chat-tools";
 import { logRecommendation } from "@/src/lib/ai/log-recommendation";
-import { AI_CHAT_SYSTEM_PROMPT } from "@/src/lib/ai/system-prompt";
+import { buildAiChatSystemPrompt } from "@/src/lib/ai/system-prompt";
+import { isValidFinishedDate } from "@/src/lib/books/set-reading-status";
+import { formatLocalDate } from "@/src/lib/reading/format-local-date";
 import { createClient } from "@/src/lib/supabase/server";
 
 export const maxDuration = 60;
@@ -18,6 +20,8 @@ const MAX_MESSAGES = 20;
 
 const chatBodySchema = z.object({
   messages: z.array(z.unknown()).min(1),
+  /** User's local calendar date (YYYY-MM-DD) for resolving "today" / "yesterday". */
+  clientToday: z.string().optional(),
 });
 
 function extractTextFromUIMessage(message: UIMessage): string {
@@ -26,6 +30,13 @@ function extractTextFromUIMessage(message: UIMessage): string {
     .map((part) => part.text)
     .join("\n")
     .trim();
+}
+
+function resolveToday(clientToday: string | undefined): string {
+  if (clientToday && isValidFinishedDate(clientToday)) {
+    return clientToday;
+  }
+  return formatLocalDate(new Date());
 }
 
 export async function POST(request: Request) {
@@ -62,6 +73,7 @@ export async function POST(request: Request) {
 
   const messages = parsed.data.messages as UIMessage[];
   const recentMessages = messages.slice(-MAX_MESSAGES);
+  const today = resolveToday(parsed.data.clientToday);
 
   const tools = createChatTools({
     supabase,
@@ -71,7 +83,7 @@ export async function POST(request: Request) {
 
   const result = streamText({
     model: openai("gpt-4o-mini"),
-    system: AI_CHAT_SYSTEM_PROMPT,
+    system: buildAiChatSystemPrompt(today),
     messages: await convertToModelMessages(recentMessages),
     tools,
     stopWhen: stepCountIs(16),

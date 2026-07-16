@@ -1,5 +1,6 @@
 import { isToolUIPart, getToolName, type UIMessage } from "ai";
 import { isReservedDefaultListName } from "@/src/lib/ai/mutable-list-guard";
+import { isValidFinishedDate } from "@/src/lib/books/set-reading-status";
 import type { ChatBookMention } from "@/src/components/ai-chat/ChatMessageText";
 
 type ApprovalInput = Record<string, unknown>;
@@ -18,21 +19,28 @@ function asRecord(value: unknown): Record<string, unknown> | null {
   return value as Record<string, unknown>;
 }
 
-/** Returns a reason when a pending write must be auto-denied (e.g. reserved list names). */
+/** Returns a reason when a pending write must be auto-denied. */
 export function getForbiddenApprovalReason(
   toolName: string,
   input: ApprovalInput,
 ): string | null {
-  if (toolName !== "create_custom_list") {
+  if (toolName === "create_custom_list") {
+    const name = typeof input.name === "string" ? input.name.trim() : "";
+    if (name && isReservedDefaultListName(name)) {
+      return `“${name}” is a built-in shelf and cannot be created by Quill. Use Want To Read via add, or set_reading_status for Currently Reading / Finished.`;
+    }
     return null;
   }
 
-  const name = typeof input.name === "string" ? input.name.trim() : "";
-  if (!name || !isReservedDefaultListName(name)) {
-    return null;
+  if (toolName === "set_reading_status" && input.readingStatus === "finished") {
+    const finishedAt =
+      typeof input.finishedAt === "string" ? input.finishedAt.trim() : "";
+    if (!isValidFinishedDate(finishedAt)) {
+      return "A finish date is required before marking a book Finished. Tell Quill the date you finished it.";
+    }
   }
 
-  return `“${name}” is a built-in shelf and cannot be created by Quill. Manage Currently Reading, Finished, and Did Not Finish in the app.`;
+  return null;
 }
 
 export function getToolApprovalCopy(
@@ -48,7 +56,10 @@ export function getToolApprovalCopy(
   const books = options?.books ?? [];
   const count =
     options?.bookCount ??
-    (books.length > 0 ? books.length : asStringArray(input.apiIds).length);
+    (books.length > 0
+      ? books.length
+      : asStringArray(input.apiIds).length ||
+        (typeof input.apiId === "string" ? 1 : 0));
 
   switch (toolName) {
     case "create_custom_list": {
@@ -83,6 +94,26 @@ export function getToolApprovalCopy(
       return {
         title: "Remove from list",
         description: `Remove ${count} book${count === 1 ? "" : "s"} from ${shelf}.`,
+      };
+    }
+    case "set_reading_status": {
+      const title =
+        books.length === 1 ? `“${books[0]!.title}”` : "this book";
+      const finishedAt =
+        typeof input.finishedAt === "string" ? input.finishedAt.trim() : "";
+
+      if (input.readingStatus === "finished") {
+        return {
+          title: "Mark finished",
+          description: finishedAt
+            ? `Move ${title} to Finished (finished ${finishedAt}).`
+            : `Move ${title} to Finished.`,
+        };
+      }
+
+      return {
+        title: "Start reading",
+        description: `Move ${title} to Currently Reading.`,
       };
     }
     default:
@@ -273,6 +304,9 @@ export function groupPendingApprovals(
         : {};
     const listId = typeof input.listId === "string" ? input.listId : null;
     const apiIds = asStringArray(input.apiIds);
+    if (typeof input.apiId === "string" && input.apiId.trim()) {
+      apiIds.push(input.apiId.trim());
+    }
 
     const mergeable =
       (toolName === "add_books_to_list" ||

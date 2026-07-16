@@ -8,6 +8,7 @@ import { createGetReadingActivityTool } from "@/src/lib/ai/tools/get-reading-act
 import { createGetUserLibraryTool } from "@/src/lib/ai/tools/get-user-library";
 import { createRemoveBooksFromListTool } from "@/src/lib/ai/tools/remove-books-from-list";
 import { createSearchBooksTool } from "@/src/lib/ai/tools/search-books";
+import { createSetReadingStatusTool } from "@/src/lib/ai/tools/set-reading-status";
 
 export function createChatTools(ctx: AiToolContext) {
   return {
@@ -20,6 +21,7 @@ export function createChatTools(ctx: AiToolContext) {
     create_custom_list: createCreateCustomListTool(ctx),
     add_books_to_list: createAddBooksToListTool(ctx),
     remove_books_from_list: createRemoveBooksFromListTool(ctx),
+    set_reading_status: createSetReadingStatusTool(ctx),
   };
 }
 

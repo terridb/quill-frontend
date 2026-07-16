@@ -39,11 +39,13 @@ import {
 import { listKeys } from "@/src/hooks/list-keys";
 import { bookKeys } from "@/src/hooks/book-keys";
 import { readingKeys } from "@/src/hooks/reading-keys";
+import { formatLocalDate } from "@/src/lib/reading/format-local-date";
 
 const WRITE_TOOLS = new Set([
   "create_custom_list",
   "add_books_to_list",
   "remove_books_from_list",
+  "set_reading_status",
 ]);
 
 /** Detail results preferred for covers; search fills gaps when matching recommendations. */
@@ -262,7 +264,10 @@ export function AiChatPage() {
 
   const { messages, sendMessage, status, error, addToolApprovalResponse } =
     useChat({
-      transport: new DefaultChatTransport({ api: "/api/ai-chat" }),
+      transport: new DefaultChatTransport({
+        api: "/api/ai-chat",
+        body: () => ({ clientToday: formatLocalDate(new Date()) }),
+      }),
       sendAutomaticallyWhen: lastAssistantMessageIsCompleteWithApprovalResponses,
     });
 

@@ -11,7 +11,7 @@ import { getUserLists } from "@/src/lib/lists/get-user-lists";
 export function createRemoveBooksFromListTool(ctx: AiToolContext) {
   return tool({
     description:
-      "Remove one or more books from a custom list or Want To Read in a single call. Put every Google Books volume id in apiIds (max 10) — never call this tool once per book when the user asked to remove several. Requires one user confirmation for the whole batch. Never use for Currently Reading, Finished, or Did Not Finish — refuse those requests instead of creating a substitute list.",
+      "Remove one or more books from a custom list or Want To Read in a single call. Put every Google Books volume id in apiIds (max 10) — never call this tool once per book when the user asked to remove several. Requires one user confirmation for the whole batch. Never use for Currently Reading or Finished — use set_reading_status to change those shelves. Never use for Did Not Finish.",
     inputSchema: z.object({
       listId: z.string().uuid(),
       apiIds: z

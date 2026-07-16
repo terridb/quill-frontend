@@ -27,9 +27,9 @@ export function isReservedDefaultListName(name: string): boolean {
 }
 
 export function aiMutableListError(listName: string): string {
-  return `The assistant cannot change "${listName}". It can only create custom lists and add or remove books on custom lists and Want To Read. Currently Reading, Finished, and Did Not Finish must be managed by the user in the app.`;
+  return `The assistant cannot add or remove books on "${listName}" with list tools. Use set_reading_status to move books to Currently Reading or Finished. Did Not Finish must be managed by the user in the app.`;
 }
 
 export function reservedListNameError(name: string): string {
-  return `Cannot create a list named "${name}". That name is reserved for a built-in shelf. Never create lists called Want To Read, Currently Reading, Finished, or Did Not Finish. Use the existing Want To Read list via add_books_to_list, or choose a different custom list name. Currently Reading, Finished, and Did Not Finish cannot be changed by the assistant.`;
+  return `Cannot create a list named "${name}". That name is reserved for a built-in shelf. Never create lists called Want To Read, Currently Reading, Finished, or Did Not Finish. Use add_books_to_list for Want To Read, set_reading_status for Currently Reading or Finished, or choose a different custom list name.`;
 }
