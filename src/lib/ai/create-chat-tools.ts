@@ -1,6 +1,7 @@
 import type { AiToolContext } from "@/src/lib/ai/tool-context";
 import { createAddBooksToListTool } from "@/src/lib/ai/tools/add-books-to-list";
 import { createCreateCustomListTool } from "@/src/lib/ai/tools/create-custom-list";
+import { createFindBookOnShelvesTool } from "@/src/lib/ai/tools/find-book-on-shelves";
 import { createGetBookDetailsTool } from "@/src/lib/ai/tools/get-book-details";
 import { createGetListBooksTool } from "@/src/lib/ai/tools/get-list-books";
 import { createGetReadingActivityTool } from "@/src/lib/ai/tools/get-reading-activity";
@@ -15,6 +16,7 @@ export function createChatTools(ctx: AiToolContext) {
     search_books: createSearchBooksTool(ctx),
     get_book_details: createGetBookDetailsTool(),
     get_list_books: createGetListBooksTool(ctx),
+    find_book_on_shelves: createFindBookOnShelvesTool(ctx),
     create_custom_list: createCreateCustomListTool(ctx),
     add_books_to_list: createAddBooksToListTool(ctx),
     remove_books_from_list: createRemoveBooksFromListTool(ctx),

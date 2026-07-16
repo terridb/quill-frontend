@@ -23,7 +23,7 @@ const listFilterSchema = z.enum([
 export function createGetUserLibraryTool(ctx: AiToolContext) {
   return tool({
     description:
-      "Load this user's shelves with title, authors, genres, tags, language, and short descriptions. Returns tasteAuthors, preferredLanguages, doNotRecommendApiIds, and doNotRecommendBookKeys. Match recommendations to preferredLanguages (usually English). Never recommend excluded titles. Context only — no recommendation cards from this tool.",
+      "Load this user's shelves with title, authors, genres, tags, language, and short descriptions. Returns tasteAuthors, preferredLanguages, doNotRecommendApiIds, and doNotRecommendBookKeys (for recommendation search filtering only — not proof a book is on Want To Read). To check if one title is already shelved, use find_book_on_shelves. Context only — no recommendation cards from this tool.",
     inputSchema: z.object({
       listFilter: listFilterSchema
         .optional()
