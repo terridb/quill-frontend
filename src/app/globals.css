@@ -864,6 +864,137 @@ button:disabled {
   animation: recommend-promo-in 380ms ease-out both;
 }
 
+.ai-chat-starter:hover:not(:disabled) {
+  border-color: color-mix(in srgb, var(--color-accent) 28%, var(--color-border));
+  background-color: var(--color-surface);
+}
+
+.ai-chat-composer {
+  background: color-mix(in srgb, var(--color-bg) 88%, var(--color-surface));
+}
+
+/*
+ * Quill mid-dive status — margin doodle, not a chip or speaker label.
+ * Three whisker ticks (sniff) + plain spoken aside.
+ */
+.quill-tool-activity {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  max-width: 26rem;
+  margin: 0.35rem 0 0;
+  padding: 0;
+  font-size: 0.875rem;
+  line-height: 1.45;
+  background: none;
+  box-shadow: none;
+  border-radius: 0;
+  animation: quill-tool-activity-in 280ms ease-out both;
+}
+
+.quill-tool-activity__whiskers {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0.2rem;
+  flex-shrink: 0;
+  width: 0.75rem;
+  height: 1.45em;
+  margin: 0;
+  padding: 0;
+}
+
+.quill-tool-activity__whiskers > span {
+  display: block;
+  height: 1.5px;
+  border-radius: 1px;
+  background: color-mix(in srgb, var(--color-accent) 45%, var(--color-border));
+  transform-origin: left center;
+}
+
+.quill-tool-activity__whiskers > span:nth-child(1) {
+  width: 70%;
+}
+.quill-tool-activity__whiskers > span:nth-child(2) {
+  width: 100%;
+}
+.quill-tool-activity__whiskers > span:nth-child(3) {
+  width: 55%;
+}
+
+.quill-tool-activity[data-active="true"] .quill-tool-activity__whiskers > span {
+  background: var(--color-accent);
+  animation: quill-whisker-sniff 1.1s ease-in-out infinite;
+}
+
+.quill-tool-activity[data-active="true"]
+  .quill-tool-activity__whiskers
+  > span:nth-child(2) {
+  animation-delay: 0.12s;
+}
+
+.quill-tool-activity[data-active="true"]
+  .quill-tool-activity__whiskers
+  > span:nth-child(3) {
+  animation-delay: 0.24s;
+}
+
+.quill-tool-activity__text {
+  font-family: var(--font-body), system-ui, sans-serif;
+  font-size: inherit;
+  font-style: normal;
+  font-weight: 400;
+  line-height: inherit;
+  letter-spacing: 0;
+  color: var(--color-ink-secondary);
+}
+
+.quill-tool-activity[data-active="true"] .quill-tool-activity__text {
+  color: var(--color-ink-secondary);
+}
+
+@keyframes quill-tool-activity-in {
+  from {
+    opacity: 0;
+    transform: translateY(0.2rem);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes quill-whisker-sniff {
+  0%,
+  100% {
+    transform: scaleX(1);
+    opacity: 0.85;
+  }
+  50% {
+    transform: scaleX(0.72);
+    opacity: 1;
+  }
+}
+
+/* Quill mascot — knock out solid black PNG backgrounds on cream UI */
+.quill-mascot-art {
+  mix-blend-mode: lighten;
+}
+
+.quill-mascot-enter {
+  animation: recommend-promo-in 380ms ease-out both;
+}
+
+@keyframes quill-spinner-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.quill-spinner-spin {
+  animation: quill-spinner-spin 1.4s linear infinite;
+}
+
 /* Overlapped covers on multi-book shelf approvals — shelf-edge stack */
 .approval-cover-stack__item {
   transition: transform 160ms ease;
@@ -887,7 +1018,11 @@ button:disabled {
   .reading-book-nav-btn,
   .recommend-promo,
   .ai-chat-header,
-  .ai-chat-empty {
+  .ai-chat-empty,
+  .quill-mascot-enter,
+  .quill-spinner-spin,
+  .quill-tool-activity,
+  .quill-tool-activity[data-active="true"] .quill-tool-activity__whiskers > span {
     transition: none;
     animation: none;
   }

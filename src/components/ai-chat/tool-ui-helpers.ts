@@ -341,15 +341,132 @@ export function groupPendingApprovals(
   return groups;
 }
 
-export function messageHasActiveLookup(message: UIMessage): boolean {
-  return message.parts.some((part) => {
-    if (!isToolUIPart(part)) {
-      return false;
+type ToolActivityPhase = "active" | "done";
+
+export type ToolActivityStatus = {
+  label: string;
+  active: boolean;
+};
+
+/**
+ * Friendly otter asides for tool calls — curious, lightly funny, never technical.
+ */
+export function getToolActivityCopy(
+  toolName: string,
+  phase: ToolActivityPhase,
+  input?: unknown,
+): string {
+  const record = asRecord(input);
+  const query =
+    typeof record?.query === "string" ? record.query.trim().toLowerCase() : "";
+
+  switch (toolName) {
+    case "get_user_library":
+      return phase === "active"
+        ? "Diving into your shelves — hold my fish…"
+        : "Shook the water off. Nice shelves.";
+    case "get_reading_activity":
+      return phase === "active"
+        ? "Following your recent ripples…"
+        : "Caught up on where you’ve been swimming.";
+    case "search_books": {
+      if (phase === "active") {
+        if (query.includes("inauthor:")) {
+          return "Paddling after an author you like…";
+        }
+        if (query.includes("subject:") || query.includes("genre")) {
+          return "Sniffing the catalog for that exact vibe…";
+        }
+        return "Belly-flopping into the catalog…";
+      }
+      return "Came up with a few pebbles in my paws.";
     }
-    return (
-      part.state === "input-streaming" ||
-      part.state === "input-available" ||
-      part.state === "approval-responded"
-    );
-  });
+    case "get_book_details":
+      return phase === "active"
+        ? "Pressing my nose to this spine…"
+        : "Got a good long sniff of that one.";
+    case "get_list_books":
+      return phase === "active"
+        ? "Flipping that pile with both paws…"
+        : "Sorted that pile. Mostly.";
+    case "find_book_on_shelves":
+      return phase === "active"
+        ? "Is this already nesting on your shelves…?"
+        : "Checked the den for that title.";
+    case "create_custom_list":
+      return phase === "active"
+        ? "Building you a little book nest…"
+        : "New nest, ready for books.";
+    case "add_books_to_list":
+      return phase === "active"
+        ? "Tucking books under my arm for your shelf…"
+        : "Books delivered. I only chewed one corner.";
+    case "remove_books_from_list":
+      return phase === "active"
+        ? "Gently nudging these off the shelf…"
+        : "Cleared some space. No books were eaten.";
+    case "set_reading_status":
+      return phase === "active"
+        ? "Moving this one to a new perch…"
+        : "New perch secured.";
+    default:
+      return phase === "active"
+        ? "Busy being a helpful otter…"
+        : "Did a little otter errand.";
+  }
+}
+
+function isActiveToolState(state: string): boolean {
+  return (
+    state === "input-streaming" ||
+    state === "input-available" ||
+    state === "approval-responded"
+  );
+}
+
+/**
+ * Single live status for the message: the in-progress tool, or the latest
+ * finished step while Quill still has no reply text yet.
+ */
+export function getVisibleToolActivity(
+  message: UIMessage,
+): ToolActivityStatus | null {
+  const hasReplyText = message.parts.some(
+    (part) => part.type === "text" && part.text.trim().length > 0,
+  );
+
+  for (let i = message.parts.length - 1; i >= 0; i -= 1) {
+    const part = message.parts[i];
+    if (!isToolUIPart(part)) {
+      continue;
+    }
+    if (isActiveToolState(part.state)) {
+      return {
+        label: getToolActivityCopy(
+          getToolName(part),
+          "active",
+          part.input,
+        ),
+        active: true,
+      };
+    }
+  }
+
+  // Between steps (or before the first reply token): show only the latest done.
+  if (hasReplyText) {
+    return null;
+  }
+
+  for (let i = message.parts.length - 1; i >= 0; i -= 1) {
+    const part = message.parts[i];
+    if (!isToolUIPart(part) || part.state !== "output-available") {
+      continue;
+    }
+    return {
+      label: getToolActivityCopy(getToolName(part), "done", part.input),
+      active: false,
+    };
+  }
+
+  return null;
 }

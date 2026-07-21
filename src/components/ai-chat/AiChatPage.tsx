@@ -27,11 +27,15 @@ import {
   extractBookMentions,
   getForbiddenApprovalReason,
   getToolApprovalCopy,
+  getVisibleToolActivity,
   groupPendingApprovals,
-  messageHasActiveLookup,
   mergeBookMentions,
   resolveBooksForApiIds,
 } from "@/src/components/ai-chat/tool-ui-helpers";
+import {
+  QuillMascot,
+  type QuillMascotMood,
+} from "@/src/components/ui/QuillMascot";
 import {
   filterToAllowedApiIds,
   resolveReferentialAddApiIds,
@@ -50,6 +54,86 @@ const WRITE_TOOLS = new Set([
 
 /** Detail results preferred for covers; search fills gaps when matching recommendations. */
 const BOOK_CARD_TOOLS = new Set(["search_books", "get_book_details"]);
+
+const STARTER_PROMPTS = [
+  "Something like my finished books",
+  "A short book I can finish this week",
+  "Add Project Hail Mary to Want To Read",
+] as const;
+
+function extractMessageText(message: UIMessage): string {
+  return message.parts
+    .filter((part): part is { type: "text"; text: string } => part.type === "text")
+    .map((part) => part.text)
+    .join("\n")
+    .trim();
+}
+
+/** Quill is waiting on the reader (clarifying question in the last reply). */
+function messageEndsWithQuestion(message: UIMessage): boolean {
+  const text = extractMessageText(message);
+  if (!text) {
+    return false;
+  }
+  // Trailing ? optionally followed by closing quotes / brackets
+  return /\?[’”"'\)\]]*\s*$/.test(text);
+}
+
+/** Last reply looks like Quill came up empty on finds / recommendations. */
+function messageLooksLikeEmptyFind(message: UIMessage): boolean {
+  const text = extractMessageText(message);
+  if (!text) {
+    return false;
+  }
+
+  // Numbered recommendation list present — not empty-handed.
+  if (/(?:^|\n)\s*1\.\s/.test(text)) {
+    return false;
+  }
+
+  const lower = text.toLowerCase();
+  return (
+    /could(?:['’]t| not) find/.test(lower) ||
+    /did(?:['’]t| not) find/.test(lower) ||
+    /came up empty/.test(lower) ||
+    /empty[- ]handed/.test(lower) ||
+    /nothing (?:fitting|matching|new|that|useful)/.test(lower) ||
+    /no (?:good )?matches/.test(lower) ||
+    /no titles?(?:\s+\w+){0,4}\s+(?:that|to|for)/.test(lower) ||
+    /struck out/.test(lower)
+  );
+}
+
+/** Every search_books call in this message returned zero hits (and no numbered picks). */
+function messageHadOnlyEmptySearches(message: UIMessage): boolean {
+  const text = extractMessageText(message);
+  if (!text || /(?:^|\n)\s*1\.\s/.test(text)) {
+    return false;
+  }
+
+  let sawSearch = false;
+
+  for (const part of message.parts) {
+    if (!isToolUIPart(part) || part.state !== "output-available") {
+      continue;
+    }
+    if (getToolName(part) !== "search_books") {
+      continue;
+    }
+    sawSearch = true;
+    const output = part.output;
+    if (
+      output &&
+      typeof output === "object" &&
+      Array.isArray((output as { results?: unknown }).results) &&
+      (output as { results: unknown[] }).results.length > 0
+    ) {
+      return false;
+    }
+  }
+
+  return sawSearch;
+}
 
 function collectMessageBooks(message: UIMessage): ChatBookMention[] {
   const collected: ChatBookMention[] = [];
@@ -130,9 +214,9 @@ function MessageParts({
       }
       return true;
     });
-  const showLookup = messageHasActiveLookup(message);
   let renderedApprovals = false;
   let renderedDenied = false;
+  const toolActivity = getVisibleToolActivity(message);
 
   return (
     <div className="min-w-0 max-w-full space-y-3 overflow-x-hidden">
@@ -218,12 +302,6 @@ function MessageParts({
           );
         }
 
-        // Book cards are interleaved with recommendation text — do not dump
-        // search grids above the answer (forces scroll-back to see covers).
-        if (part.state === "output-available") {
-          return null;
-        }
-
         if (part.state === "output-denied") {
           if (renderedDenied) {
             return null;
@@ -236,21 +314,23 @@ function MessageParts({
           );
         }
 
-        // In-progress tool calls: one shared status line (see below).
-        if (
-          part.state === "input-streaming" ||
-          part.state === "input-available" ||
-          part.state === "approval-responded"
-        ) {
-          return null;
-        }
-
+        // Tool activity is a single shelf-whisper below — never a stack of steps.
         return null;
       })}
 
-      {showLookup ? (
-        <p key={`${message.id}-lookup`} className="text-label">
-          Looking things up…
+      {toolActivity ? (
+        <p
+          key={`${message.id}-activity-${toolActivity.label}`}
+          className="quill-tool-activity"
+          data-active={toolActivity.active ? "true" : "false"}
+          aria-live="polite"
+        >
+          <span className="quill-tool-activity__whiskers" aria-hidden="true">
+            <span />
+            <span />
+            <span />
+          </span>
+          <span className="quill-tool-activity__text">{toolActivity.label}</span>
         </p>
       ) : null}
     </div>
@@ -319,6 +399,37 @@ export function AiChatPage() {
 
   const isBusy = status === "submitted" || status === "streaming";
 
+  const lastAssistant = [...messages]
+    .reverse()
+    .find((message) => message.role === "assistant");
+  const lastMessage = messages[messages.length - 1];
+  const awaitingApproval =
+    lastAssistant != null &&
+    lastAssistant.parts.some(
+      (part) =>
+        isToolUIPart(part) &&
+        part.state === "approval-requested" &&
+        part.approval,
+    );
+  const awaitingUserReply =
+    !isBusy &&
+    lastMessage?.role === "assistant" &&
+    lastAssistant != null &&
+    messageEndsWithQuestion(lastAssistant);
+  const emptyFind =
+    !isBusy &&
+    lastMessage?.role === "assistant" &&
+    lastAssistant != null &&
+    (messageLooksLikeEmptyFind(lastAssistant) ||
+      messageHadOnlyEmptySearches(lastAssistant));
+
+  let mascotMood: QuillMascotMood = "happy";
+  if (error || emptyFind) {
+    mascotMood = "oops";
+  } else if (isBusy || awaitingApproval || awaitingUserReply) {
+    mascotMood = "question";
+  }
+
   const handleSubmit = (event: FormEvent) => {
     event.preventDefault();
     const text = input.trim();
@@ -327,6 +438,15 @@ export function AiChatPage() {
     }
     setInput("");
     void sendMessage({ text });
+  };
+
+  const askQuill = (text: string) => {
+    const trimmed = text.trim();
+    if (!trimmed || isBusy) {
+      return;
+    }
+    setInput("");
+    void sendMessage({ text: trimmed });
   };
 
   const handleInputFocus = () => {
@@ -338,34 +458,60 @@ export function AiChatPage() {
 
   return (
     <div className="ai-chat-page flex min-h-0 w-full min-w-0 max-w-2xl flex-1 flex-col overflow-x-hidden overflow-y-hidden">
-      <header className="ai-chat-header shrink-0 border-b border-[var(--color-border)] pt-5 pb-4 md:pt-8">
-        <p className="text-label tracking-[0.08em] uppercase">Shelf note</p>
-        <h1 className="text-display mt-2 text-[1.75rem] leading-tight tracking-tight text-[var(--color-ink)] md:text-[2rem]">
-          Ask Quill
-        </h1>
-        <p className="mt-2 max-w-md text-[15px] leading-relaxed text-[var(--color-ink-secondary)]">
-          Get picks from your shelves and new finds — no spoilers, only books
-          we can look up.
-        </p>
+      <header className="ai-chat-header shrink-0 border-b border-[var(--color-border)]/80 pt-4 pb-4 md:pt-6 md:pb-5">
+        <div className="flex items-end gap-3 sm:gap-4">
+          <QuillMascot
+            mood={mascotMood}
+            size="lg"
+            className="-mb-1 -ml-2 sm:-ml-1"
+          />
+          <div className="min-w-0 flex-1 pb-2">
+            <p className="text-label tracking-[0.08em] uppercase">
+              Reads like a friend
+            </p>
+            <h1 className="text-display mt-1 text-[1.85rem] leading-none tracking-tight text-[var(--color-ink)] md:text-[2.15rem]">
+              Ask Quill!
+            </h1>
+            <p className="mt-2 max-w-sm text-[15px] leading-relaxed text-[var(--color-ink-secondary)]">
+              Stuck on what to read? Quill digs your shelves, sniffs out new
+              finds, and keeps the spoilers to himself.
+            </p>
+          </div>
+        </div>
       </header>
 
       <div
         ref={messagesRef}
-        className={`min-h-0 min-w-0 flex-1 space-y-5 overscroll-y-contain py-5 [-webkit-overflow-scrolling:touch] ${
+        className={`min-h-0 min-w-0 flex-1 space-y-5 overscroll-y-contain pt-5 pb-4 [-webkit-overflow-scrolling:touch] ${
           messages.length > 0
             ? "overflow-x-hidden overflow-y-auto"
             : "overflow-hidden"
         }`}
       >
         {messages.length === 0 ? (
-          <div className="ai-chat-empty rounded-xl border border-dashed border-[var(--color-border)] bg-[var(--color-surface)]/70 px-5 py-8">
-            <p className="text-display text-xl text-[var(--color-ink)]">
-              What should you read next?
-            </p>
-            <p className="mt-2 text-sm leading-relaxed text-[var(--color-ink-secondary)]">
-              Try “something like my finished books” or “add Project Hail Mary
-              to Want To Read.”
-            </p>
+          <div className="ai-chat-empty flex flex-col justify-center gap-6 px-1 py-6">
+            <div>
+              <p className="text-display text-[1.35rem] leading-snug text-[var(--color-ink)] md:text-2xl">
+                What should we pull off the shelf?
+              </p>
+              <p className="mt-2 max-w-md text-sm leading-relaxed text-[var(--color-ink-secondary)]">
+                Quill is ready when you are. Pick a starter, or type your own.
+              </p>
+            </div>
+            <ul className="flex flex-col gap-2">
+              {STARTER_PROMPTS.map((prompt) => (
+                <li key={prompt}>
+                  <button
+                    type="button"
+                    disabled={isBusy}
+                    onClick={() => askQuill(prompt)}
+                    className="focus-ring ai-chat-starter w-full rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)]/80 px-4 py-3 text-left text-[15px] leading-snug text-[var(--color-ink)] transition-[border-color,background-color] disabled:opacity-50"
+                  >
+                    {prompt}
+                  </button>
+                </li>
+              ))}
+            </ul>
           </div>
         ) : null}
 
@@ -374,8 +520,8 @@ export function AiChatPage() {
             key={message.id}
             className={
               message.role === "user"
-                ? "ml-4 min-w-0 max-w-full overflow-x-hidden rounded-xl bg-[var(--color-accent-soft)] px-4 py-3 sm:ml-8"
-                : "mr-0 min-w-0 max-w-full overflow-x-hidden sm:mr-2"
+                ? "ml-6 min-w-0 max-w-full overflow-x-hidden rounded-2xl rounded-br-md bg-[var(--color-accent-soft)] px-4 py-3 sm:ml-12"
+                : "mr-2 min-w-0 max-w-full overflow-x-hidden sm:mr-4"
             }
           >
             <p className="text-label mb-1.5">
@@ -389,35 +535,31 @@ export function AiChatPage() {
           </article>
         ))}
 
-        {isBusy ? (
-          <p className="text-label animate-pulse">Quill is thinking…</p>
-        ) : null}
-
         {error ? (
           <p
             role="alert"
-            className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800"
+            className="rounded-xl border border-red-200/80 bg-red-50/90 px-3.5 py-2.5 text-sm text-red-900"
           >
-            {error.message || "Something went wrong. Try again."}
+            {error.message || "Quill couldn’t finish that. Try again."}
           </p>
         ) : null}
       </div>
 
       <form
         onSubmit={handleSubmit}
-        className="shrink-0 border-t border-[var(--color-border)] bg-[var(--color-bg)] pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]"
+        className="ai-chat-composer shrink-0 border-t border-[var(--color-border)]/80 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]"
       >
         <label htmlFor="ai-chat-input" className="sr-only">
           Message Quill
         </label>
-        <div className="input-surface flex items-end gap-2 rounded-xl p-2">
+        <div className="input-surface flex items-end gap-2 rounded-2xl p-2">
           <textarea
             id="ai-chat-input"
             rows={2}
             value={input}
             onChange={(event) => setInput(event.target.value)}
             onFocus={handleInputFocus}
-            placeholder="Ask for a recommendation…"
+            placeholder="Tell Quill what you’re in the mood for…"
             className="max-h-40 min-h-[2.75rem] flex-1 resize-none bg-transparent px-2 py-2 text-[15px] text-[var(--color-ink)] outline-none placeholder:text-[var(--color-muted)]"
             onKeyDown={(event) => {
               if (event.key === "Enter" && !event.shiftKey) {
@@ -434,9 +576,9 @@ export function AiChatPage() {
           <button
             type="submit"
             disabled={isBusy || !input.trim()}
-            className="focus-ring shrink-0 rounded-lg bg-[var(--color-accent)] px-3.5 py-2 text-sm font-medium text-white transition-opacity hover:opacity-90 disabled:opacity-50"
+            className="focus-ring shrink-0 rounded-xl bg-[var(--color-accent)] px-3.5 py-2 text-sm font-medium text-white transition-opacity hover:opacity-90 disabled:opacity-50"
           >
-            Send
+            Ask
           </button>
         </div>
       </form>
