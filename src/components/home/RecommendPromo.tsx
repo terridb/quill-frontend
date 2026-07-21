@@ -1,33 +1,63 @@
 import Link from "next/link";
+import { QuillMascot } from "@/src/components/ui/QuillMascot";
+
+const STARTERS = [
+  { label: "Surprise me", href: "/ai-chat" },
+  { label: "Something short", href: "/ai-chat" },
+  { label: "Like what I finished", href: "/ai-chat" },
+] as const;
 
 export function RecommendPromo() {
   return (
     <section
       aria-labelledby="recommend-promo-heading"
-      className="recommend-promo mt-10 border-t border-[var(--color-border)] pt-8"
+      className="recommend-promo mt-10"
     >
-      <div className="recommend-promo-inner relative pl-4 md:pl-5">
-        <span
-          aria-hidden="true"
-          className="recommend-promo-rule absolute top-1 bottom-1 left-0 w-px bg-[var(--color-ink)]/25"
-        />
-        <p className="text-label tracking-[0.08em] uppercase">Shelf note</p>
-        <h2
-          id="recommend-promo-heading"
-          className="text-display mt-2 max-w-sm text-[1.75rem] leading-[1.15] tracking-tight text-[var(--color-ink)] md:text-[2rem]"
-        >
-          Ask Quill
-        </h2>
-        <p className="mt-3 max-w-md text-[15px] leading-relaxed text-[var(--color-ink-secondary)]">
-          Get picks from your shelves and new finds.
-        </p>
-        <Link
-          href="/ai-chat"
-          className="focus-ring mt-5 inline-flex items-center gap-2 rounded-md bg-[var(--color-accent)] px-4 py-2.5 text-sm font-medium text-white transition-opacity hover:opacity-90"
-        >
-          Ask Quill
-          <span aria-hidden="true">→</span>
-        </Link>
+      <div className="recommend-promo-stage">
+        <span className="recommend-promo-splash recommend-promo-splash--a" aria-hidden="true" />
+        <span className="recommend-promo-splash recommend-promo-splash--b" aria-hidden="true" />
+        <span className="recommend-promo-splash recommend-promo-splash--c" aria-hidden="true" />
+
+        <div className="recommend-promo-body">
+          <p className="recommend-promo-live">
+            <span className="recommend-promo-live__dot" aria-hidden="true" />
+            Quill’s free
+          </p>
+          <h2
+            id="recommend-promo-heading"
+            className="recommend-promo-title text-display"
+          >
+            Ask Quill!
+          </h2>
+          <p className="recommend-promo-lede">
+            Your otter for what to read next. He digs your shelves and brings
+            back the good stuff. No worries, spoilers stay sealed!
+          </p>
+
+          <ul className="recommend-promo-chips">
+            {STARTERS.map((starter) => (
+              <li key={starter.label}>
+                <Link href={starter.href} className="recommend-promo-chip focus-ring">
+                  {starter.label}
+                </Link>
+              </li>
+            ))}
+          </ul>
+
+          <Link href="/ai-chat" className="recommend-promo-cta focus-ring">
+            Chat with Quill
+            <span aria-hidden="true" className="recommend-promo-cta__arrow">
+              →
+            </span>
+          </Link>
+        </div>
+
+        <div className="recommend-promo-sticker" aria-hidden="true">
+          <p className="recommend-promo-bubble">Got a reading itch?</p>
+          <div className="recommend-promo-sticker__pad">
+            <QuillMascot mood="happy" size="xl" className="recommend-promo-mascot" />
+          </div>
+        </div>
       </div>
     </section>
   );

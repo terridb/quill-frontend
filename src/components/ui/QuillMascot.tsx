@@ -4,7 +4,7 @@ export type QuillMascotMood = "happy" | "question" | "oops" | "spinner";
 
 export interface QuillMascotProps {
   mood: QuillMascotMood;
-  size?: "sm" | "md" | "lg";
+  size?: "sm" | "md" | "lg" | "xl";
   className?: string;
   /** Accessible name when the mascot is not purely decorative. */
   label?: string;
@@ -23,12 +23,14 @@ const SIZE_PX = {
   sm: 88,
   md: 128,
   lg: 152,
+  xl: 200,
 } as const;
 
 const SIZE_CLASS = {
   sm: "h-[88px] w-[88px]",
   md: "h-32 w-32",
   lg: "h-[152px] w-[152px]",
+  xl: "h-[200px] w-[200px]",
 } as const;
 
 export function QuillMascot({
