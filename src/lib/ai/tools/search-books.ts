@@ -13,7 +13,7 @@ function primaryLanguage(code: string): string {
 export function createSearchBooksTool(ctx: AiToolContext) {
   return tool({
     description:
-      'Search for NEW catalog books. For recommendations, search each tasteAuthors entry as inauthor:"Full Author Name", pass preferredLanguages[0] as language (e.g. "en"), and always pass doNotRecommendApiIds plus doNotRecommendBookKeys. Prefer author/series queries over vague genre-only queries.',
+      'Search for NEW catalog books. Always pass preferredLanguages[0] as language when recommending, plus doNotRecommendApiIds and doNotRecommendBookKeys. When the user named a genre/type, search that first (e.g. subject:thriller, subject:"psychological thriller", or "thriller novel") — do not only search tasteAuthors. When picking from reading history, search each tasteAuthors entry as inauthor:"Full Author Name".',
     inputSchema: z.object({
       query: z.string().trim().min(1).max(200),
       maxResults: z
