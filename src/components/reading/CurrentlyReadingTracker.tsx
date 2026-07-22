@@ -47,6 +47,19 @@ function TrackerCover({ book }: { book: TrackerBook }) {
   );
 }
 
+function progressLine(book: TrackerBook): string | null {
+  if (book.pagesReadToday != null && book.pagesReadToday > 0) {
+    return `${book.pagesReadToday} page${book.pagesReadToday === 1 ? "" : "s"} today`;
+  }
+  if (book.currentPage != null && book.pageCount != null) {
+    return `Page ${book.currentPage} of ${book.pageCount}`;
+  }
+  if (book.progressPercent != null) {
+    return `${book.progressPercent}% through`;
+  }
+  return null;
+}
+
 export function CurrentlyReadingTracker({
   initialTracker,
 }: CurrentlyReadingTrackerProps) {
@@ -74,6 +87,7 @@ export function CurrentlyReadingTracker({
   const safeIndex = Math.min(activeIndex, books.length - 1);
   const activeBook = books[safeIndex] ?? books[0];
   const showBookNav = books.length > 1;
+  const status = progressLine(activeBook);
 
   const goToPrevious = () => {
     setActiveIndex(safeIndex === 0 ? books.length - 1 : safeIndex - 1);
@@ -102,6 +116,10 @@ export function CurrentlyReadingTracker({
       </header>
 
       <div className="reading-tracker-widget__body">
+        <aside className="reading-tracker-widget__cover">
+          <TrackerCover book={activeBook} />
+        </aside>
+
         <div className="reading-tracker-widget__main min-w-0">
           {isFormOpen ? (
             <TrackerProgressPanel
@@ -111,49 +129,68 @@ export function CurrentlyReadingTracker({
               onCancel={() => setIsFormOpen(false)}
             />
           ) : (
-            <button
-              type="button"
-              onClick={() => setIsFormOpen(true)}
-              className={`focus-ring reading-tracker-cta${
-                activeBook.readToday ? " reading-tracker-cta--logged" : ""
-              }`}
-            >
-              {activeBook.readToday ? "Update progress" : "I read today"}
-            </button>
+            <>
+              <div className="reading-tracker-widget__meta">
+                <h2 className="reading-tracker-widget__title text-display">
+                  <Link
+                    href={getBookPath(activeBook.bookId, activeBook.title)}
+                    className="focus-ring rounded-sm"
+                  >
+                    {activeBook.title}
+                  </Link>
+                </h2>
+                {activeBook.authors ? (
+                  <p className="reading-tracker-widget__authors">
+                    {activeBook.authors}
+                  </p>
+                ) : null}
+                {status ? (
+                  <p className="reading-tracker-widget__status">{status}</p>
+                ) : null}
+              </div>
+
+              <div className="reading-tracker-widget__actions">
+                <button
+                  type="button"
+                  onClick={() => setIsFormOpen(true)}
+                  className={`focus-ring reading-tracker-cta${
+                    activeBook.readToday ? " reading-tracker-cta--logged" : ""
+                  }`}
+                >
+                  {activeBook.readToday ? "Update progress" : "I read today"}
+                </button>
+
+                {showBookNav ? (
+                  <div className="reading-tracker-widget__nav">
+                    <button
+                      type="button"
+                      className="focus-ring reading-book-nav-btn"
+                      onClick={goToPrevious}
+                      aria-label="Previous book"
+                    >
+                      <ChevronLeftIcon className="size-3.5" />
+                    </button>
+                    <span
+                      className="reading-book-nav-label tabular-nums"
+                      aria-live="polite"
+                    >
+                      {safeIndex + 1} / {books.length}
+                    </span>
+                    <button
+                      type="button"
+                      className="focus-ring reading-book-nav-btn"
+                      onClick={goToNext}
+                      aria-label="Next book"
+                    >
+                      <ChevronRightIcon className="size-3.5" />
+                    </button>
+                  </div>
+                ) : null}
+              </div>
+            </>
           )}
         </div>
-
-        <aside className="reading-tracker-widget__cover">
-          <TrackerCover book={activeBook} />
-        </aside>
       </div>
-
-      {showBookNav ? (
-        <footer className="reading-tracker-widget__footer">
-          <button
-            type="button"
-            className="focus-ring reading-book-nav-btn"
-            onClick={goToPrevious}
-            aria-label="Previous book"
-          >
-            <ChevronLeftIcon className="size-3.5" />
-          </button>
-          <span
-            className="reading-book-nav-label tabular-nums"
-            aria-live="polite"
-          >
-            {safeIndex + 1} / {books.length}
-          </span>
-          <button
-            type="button"
-            className="focus-ring reading-book-nav-btn"
-            onClick={goToNext}
-            aria-label="Next book"
-          >
-            <ChevronRightIcon className="size-3.5" />
-          </button>
-        </footer>
-      ) : null}
     </section>
   );
 }

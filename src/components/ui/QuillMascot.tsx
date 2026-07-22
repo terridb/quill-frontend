@@ -58,9 +58,7 @@ export function QuillMascot({
           height={px}
           className={`quill-mascot-art absolute inset-0 h-full w-full object-contain transition-opacity duration-200 ease-out ${
             m === mood ? "opacity-100" : "opacity-0"
-          } ${m === "oops" ? "-scale-x-100" : ""} ${
-            m === "spinner" && mood === "spinner" ? "quill-spinner-spin" : ""
-          }`}
+          } ${m === "spinner" && mood === "spinner" ? "quill-spinner-spin" : ""}`}
           sizes={`${px}px`}
           priority={m === "happy"}
         />
