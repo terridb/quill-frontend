@@ -195,7 +195,7 @@ button:disabled {
 }
 
 @media (min-width: 48rem) {
-  main:has(.book-detail-page) {
+  .app-shell-content:has(.book-detail-page) {
     max-width: 64rem;
   }
 
@@ -215,7 +215,7 @@ button:disabled {
 }
 
 @media (min-width: 64rem) {
-  main:has(.book-detail-page) {
+  .app-shell-content:has(.book-detail-page) {
     max-width: 72rem;
   }
 }
@@ -273,7 +273,7 @@ button:disabled {
 }
 
 @media (min-width: 48rem) {
-  main:has(.profile-page) {
+  .app-shell-content:has(.profile-page) {
     max-width: 56rem;
   }
 }
