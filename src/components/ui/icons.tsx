@@ -197,3 +197,21 @@ export function FlameIcon({ className = "h-5 w-5" }: IconProps) {
     </svg>
   );
 }
+
+export function QuillChatIcon({ className = "h-5 w-5" }: IconProps) {
+  return (
+    <svg
+      className={className}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.75"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <path d="M4 19c2-1 4-4 5.5-7.5C11 7 14 4 20 3c-1 4-2.5 7-5 9.5C12 15 9 17 4 19z" />
+      <path d="M11.5 11.5 8 15" />
+    </svg>
+  );
+}

@@ -1,6 +1,6 @@
 "use client";
 
-import { useId, useState } from "react";
+import { useEffect, useId, useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { listKeys } from "@/src/hooks/list-keys";
 import { readingKeys } from "@/src/hooks/reading-keys";
@@ -83,13 +83,29 @@ export function TrackerProgressPanel({
 }: TrackerProgressPanelProps) {
   const panelId = useId();
   const [mode, setMode] = useProgressInputMode();
-  const [progressValue, setProgressValue] = useState("");
+  const [progressValue, setProgressValue] = useState(
+    book.currentPage !== null ? String(book.currentPage) : "",
+  );
   const [totalPagesValue, setTotalPagesValue] = useState(
     book.pageCount !== null ? String(book.pageCount) : "",
   );
   const [error, setError] = useState<string | null>(null);
   const updateProgress = useUpdateReadingProgress();
   const queryClient = useQueryClient();
+
+  useEffect(() => {
+    setProgressValue(
+      mode === "percent"
+        ? book.progressPercent !== null
+          ? String(book.progressPercent)
+          : ""
+        : book.currentPage !== null
+          ? String(book.currentPage)
+          : "",
+    );
+    // Re-seed only when input mode changes so background refetches don't wipe typing.
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- book values read at mode switch
+  }, [mode]);
 
   const statusMutation = useMutation({
     mutationFn: (readingStatus: "finished" | "did_not_finish") =>

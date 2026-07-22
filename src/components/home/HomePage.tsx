@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { CurrentlyReadingTracker } from "@/src/components/reading/CurrentlyReadingTracker";
+import { RecommendPromo } from "@/src/components/home/RecommendPromo";
 import { useReadingTracker } from "@/src/hooks/use-reading-tracker";
 import type { ReadingTrackerData } from "@/src/types/reading-tracker";
 
@@ -19,7 +20,7 @@ export function HomePage({ initialTracker }: HomePageProps) {
       {hasBooks ? (
         <CurrentlyReadingTracker initialTracker={activeTracker} />
       ) : (
-        <div className="flex min-h-[55vh] flex-col justify-center">
+        <div className="flex min-h-[40vh] flex-col justify-center">
           <h1 className="text-display max-w-sm text-[2rem] leading-[1.12] tracking-tight text-[var(--color-ink)] md:text-[2.35rem]">
             Every book you read, in one place.
           </h1>
@@ -38,6 +39,7 @@ export function HomePage({ initialTracker }: HomePageProps) {
           </p>
         </div>
       )}
+      <RecommendPromo />
     </div>
   );
 }

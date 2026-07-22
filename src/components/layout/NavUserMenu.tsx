@@ -81,16 +81,28 @@ export function NavUserMenu({ profile, email, showListsLink = false }: NavUserMe
           className="absolute top-full right-0 z-50 mt-2 min-w-[10rem] overflow-hidden rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] py-1 shadow-[var(--shadow-md)]"
         >
           {showListsLink ? (
-            <li role="none" className="md:hidden">
-              <Link
-                href="/lists"
-                role="menuitem"
-                className="focus-ring block px-4 py-2.5 text-sm text-[var(--color-ink)] transition-colors hover:bg-[var(--color-accent-soft)]"
-                onClick={() => setIsOpen(false)}
-              >
-                Lists
-              </Link>
-            </li>
+            <>
+              <li role="none" className="md:hidden">
+                <Link
+                  href="/ai-chat"
+                  role="menuitem"
+                  className="focus-ring block px-4 py-2.5 text-sm text-[var(--color-ink)] transition-colors hover:bg-[var(--color-accent-soft)]"
+                  onClick={() => setIsOpen(false)}
+                >
+                  Ask Quill
+                </Link>
+              </li>
+              <li role="none" className="md:hidden">
+                <Link
+                  href="/lists"
+                  role="menuitem"
+                  className="focus-ring block px-4 py-2.5 text-sm text-[var(--color-ink)] transition-colors hover:bg-[var(--color-accent-soft)]"
+                  onClick={() => setIsOpen(false)}
+                >
+                  Lists
+                </Link>
+              </li>
+            </>
           ) : null}
           <li role="none">
             <Link

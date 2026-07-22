@@ -9,6 +9,7 @@ export interface BookCoverProps {
 export function BookCover({ coverUrl, title, className = "" }: BookCoverProps) {
   return (
     <div
+      title={title}
       className={`book-cover-hover relative shrink-0 overflow-hidden rounded-md bg-[var(--color-fill)] shadow-[var(--shadow-cover)] ${className}`}
     >
       {coverUrl ? (
@@ -25,7 +26,6 @@ export function BookCover({ coverUrl, title, className = "" }: BookCoverProps) {
           No cover
         </div>
       )}
-      <span className="sr-only">{title}</span>
     </div>
   );
 }
