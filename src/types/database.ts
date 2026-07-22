@@ -98,6 +98,7 @@ export type Database = {
           finished_at: string | null;
           id: string;
           list_id: string;
+          page_count: number | null;
           started_at: string | null;
         };
         Insert: {
@@ -107,6 +108,7 @@ export type Database = {
           finished_at?: string | null;
           id?: string;
           list_id: string;
+          page_count?: number | null;
           started_at?: string | null;
         };
         Update: {
@@ -116,6 +118,7 @@ export type Database = {
           finished_at?: string | null;
           id?: string;
           list_id?: string;
+          page_count?: number | null;
           started_at?: string | null;
         };
         Relationships: [

@@ -10,6 +10,7 @@ describe("entriesToListBooks", () => {
         listId: "list-1",
         bookId: "book-uuid-1",
         currentPage: null,
+        pageCount: null,
         startedAt: null,
         finishedAt: null,
         addedAt: "2026-01-01T00:00:00.000Z",

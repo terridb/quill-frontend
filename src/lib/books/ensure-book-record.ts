@@ -6,6 +6,7 @@ import type { Database } from "@/src/types/database";
 export interface BookRecordRef {
   id: string;
   apiId: string;
+  pageCount: number | null;
 }
 
 type TypedSupabaseClient = SupabaseClient<Database>;
@@ -16,7 +17,7 @@ export async function ensureBookRecord(
 ): Promise<BookRecordRef> {
   const { data: existing, error: lookupError } = await supabase
     .from("books")
-    .select("id, api_id, language")
+    .select("id, api_id, language, page_count")
     .eq("api_id", apiId)
     .maybeSingle();
 
@@ -37,7 +38,11 @@ export async function ensureBookRecord(
       }
     }
 
-    return { id: existing.id, apiId: existing.api_id };
+    return {
+      id: existing.id,
+      apiId: existing.api_id,
+      pageCount: existing.page_count,
+    };
   }
 
   const volume = await fetchGoogleVolume(apiId);
@@ -46,14 +51,18 @@ export async function ensureBookRecord(
   const { data: inserted, error: insertError } = await supabase
     .from("books")
     .upsert(row, { onConflict: "api_id" })
-    .select("id, api_id")
+    .select("id, api_id, page_count")
     .single();
 
   if (insertError || !inserted) {
     throw new Error("Unable to save book");
   }
 
-  return { id: inserted.id, apiId: inserted.api_id };
+  return {
+    id: inserted.id,
+    apiId: inserted.api_id,
+    pageCount: inserted.page_count,
+  };
 }
 
 export async function getBookIdByApiId(

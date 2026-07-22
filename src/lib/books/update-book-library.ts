@@ -90,7 +90,12 @@ export async function updateBookLibrary(
   );
 
   const deleteIds: string[] = [];
-  const inserts: { list_id: string; book_id: string }[] = [];
+  const catalogPageCount = bookRecord?.pageCount ?? null;
+  const inserts: {
+    list_id: string;
+    book_id: string;
+    page_count: number | null;
+  }[] = [];
 
   const currentDefaultList = defaultLists.find((list) => currentByListId.has(list.id));
   const currentStatus = currentDefaultList
@@ -110,7 +115,11 @@ export async function updateBookLibrary(
       const targetList = defaultLists.find((list) => list.name === targetName);
 
       if (targetList) {
-        inserts.push({ list_id: targetList.id, book_id: internalBookId });
+        inserts.push({
+          list_id: targetList.id,
+          book_id: internalBookId,
+          page_count: catalogPageCount,
+        });
       }
     }
   }
@@ -122,7 +131,11 @@ export async function updateBookLibrary(
     const shouldHave = desiredCustomSet.has(list.id);
 
     if (shouldHave && !hasEntry) {
-      inserts.push({ list_id: list.id, book_id: internalBookId });
+      inserts.push({
+        list_id: list.id,
+        book_id: internalBookId,
+        page_count: catalogPageCount,
+      });
     } else if (!shouldHave && hasEntry) {
       const entryId = currentByListId.get(list.id);
       if (entryId) {

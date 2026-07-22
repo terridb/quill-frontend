@@ -39,6 +39,7 @@ async function fetchCurrentlyReadingEntries(
       list_id,
       book_id,
       current_page,
+      page_count,
       started_at,
       finished_at,
       added_at,

@@ -44,20 +44,12 @@ export async function updateListEntryProgress(
     .eq("list_entry_id", entryId)
     .maybeSingle();
 
-  if (input.pageCount !== undefined) {
-    const { error: bookError } = await supabase
-      .from("books")
-      .update({ page_count: input.pageCount })
-      .eq("id", entry.bookId);
-
-    if (bookError) {
-      throw new Error("Unable to update page count");
-    }
-  }
-
   const { error: updateError } = await supabase
     .from("list_entries")
-    .update({ current_page: input.currentPage })
+    .update({
+      current_page: input.currentPage,
+      ...(input.pageCount !== undefined ? { page_count: input.pageCount } : {}),
+    })
     .eq("id", entryId);
 
   if (updateError) {

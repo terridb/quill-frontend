@@ -164,6 +164,7 @@ export async function setReadingStatus(
   const { error: insertError } = await supabase.from("list_entries").insert({
     list_id: targetList.id,
     book_id: book.id,
+    page_count: book.pageCount,
     finished_at: finishedAtTimestamp,
   });
 
