@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { QuillChatIcon } from "@/src/components/ui/icons";
+import { ChatMessageIcon } from "@/src/components/ui/icons";
 
 export function NavAiChatLink() {
   const pathname = usePathname();
@@ -13,9 +13,13 @@ export function NavAiChatLink() {
       href="/ai-chat"
       aria-label="Ask Quill"
       aria-current={isActive ? "page" : undefined}
-      className="focus-ring hidden size-9 items-center justify-center rounded-full text-[var(--color-ink-secondary)] transition-colors hover:bg-[var(--color-accent-soft)] hover:text-[var(--color-accent)] md:inline-flex"
+      className={`focus-ring hidden size-9 items-center justify-center rounded-full transition-colors md:inline-flex ${
+        isActive
+          ? "text-[var(--color-accent)]"
+          : "text-[var(--color-ink-secondary)] hover:bg-[var(--color-accent-soft)] hover:text-[var(--color-accent)]"
+      }`}
     >
-      <QuillChatIcon className="size-5" />
+      <ChatMessageIcon className="size-5" filled={isActive} />
     </Link>
   );
 }

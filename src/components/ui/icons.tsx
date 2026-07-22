@@ -1,5 +1,6 @@
 export interface IconProps {
   className?: string;
+  filled?: boolean;
 }
 
 export function SearchIcon({ className = "h-5 w-5" }: IconProps) {
@@ -109,12 +110,12 @@ export function ChevronRightIcon({ className = "h-5 w-5" }: IconProps) {
   );
 }
 
-export function BookmarkIcon({ className = "h-5 w-5" }: IconProps) {
+export function BookmarkIcon({ className = "h-5 w-5", filled = false }: IconProps) {
   return (
     <svg
       className={className}
       viewBox="0 0 24 24"
-      fill="none"
+      fill={filled ? "currentColor" : "none"}
       stroke="currentColor"
       strokeWidth="1.75"
       strokeLinecap="round"
@@ -198,7 +199,24 @@ export function FlameIcon({ className = "h-5 w-5" }: IconProps) {
   );
 }
 
-export function QuillChatIcon({ className = "h-5 w-5" }: IconProps) {
+export function ChatMessageIcon({ className = "h-5 w-5", filled = false }: IconProps) {
+  return (
+    <svg
+      className={className}
+      viewBox="0 0 24 24"
+      fill={filled ? "currentColor" : "none"}
+      stroke="currentColor"
+      strokeWidth="1.75"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+    </svg>
+  );
+}
+
+export function UserIcon({ className = "h-5 w-5" }: IconProps) {
   return (
     <svg
       className={className}
@@ -210,8 +228,27 @@ export function QuillChatIcon({ className = "h-5 w-5" }: IconProps) {
       strokeLinejoin="round"
       aria-hidden="true"
     >
-      <path d="M4 19c2-1 4-4 5.5-7.5C11 7 14 4 20 3c-1 4-2.5 7-5 9.5C12 15 9 17 4 19z" />
-      <path d="M11.5 11.5 8 15" />
+      <circle cx="12" cy="8" r="3.5" />
+      <path d="M5.5 19.5c1.5-3 4-4.5 6.5-4.5s5 1.5 6.5 4.5" />
+    </svg>
+  );
+}
+
+export function SignOutIcon({ className = "h-5 w-5" }: IconProps) {
+  return (
+    <svg
+      className={className}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.75"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+      <path d="M16 17l5-5-5-5" />
+      <path d="M21 12H9" />
     </svg>
   );
 }
