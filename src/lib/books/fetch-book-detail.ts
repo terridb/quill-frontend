@@ -1,5 +1,6 @@
 import { cache } from "react";
 import type { BookDetail } from "@/src/types/book";
+import { backfillBookLanguage } from "@/src/lib/books/backfill-book-language";
 import { getBookByApiId } from "@/src/lib/books/get-book-by-api-id";
 import { mapBookRowToBookDetail } from "@/src/lib/books/map-book-row-to-detail";
 import type { BookExclusion } from "@/src/lib/books/google-books/book-exclusion";
@@ -53,7 +54,7 @@ async function fetchBookDetailUncached(apiId: string): Promise<BookDetail> {
         const language = getVolumeLanguage(volume);
 
         if (language) {
-          await supabase.from("books").update({ language }).eq("id", book.id);
+          await backfillBookLanguage(supabase, book.id, language);
           book = { ...book, language };
         }
       } catch {
