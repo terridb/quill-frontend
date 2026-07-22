@@ -55,9 +55,17 @@ html[data-ai-chat="true"] .app-shell-main {
   flex-direction: column;
   overflow: hidden;
   overscroll-behavior: none;
+  min-width: 0;
+}
+
+html[data-ai-chat="true"] .app-shell-content {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+  min-width: 0;
   padding-top: 0;
   padding-bottom: 0;
-  min-width: 0;
 }
 
 button {

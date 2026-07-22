@@ -2,6 +2,7 @@
 
 import { useId, useRef, useState } from "react";
 import { ListBookshelfSection } from "@/src/components/lists/ListBookshelfSection";
+import { ListsSectionHeading } from "@/src/components/lists/ListsSectionHeading";
 import { useCreateList } from "@/src/hooks/use-create-list";
 import type { ListWithBooks } from "@/src/types/list";
 
@@ -55,21 +56,20 @@ export function CustomListsSection({ lists, isLoading = false }: CustomListsSect
 
   return (
     <section aria-labelledby="custom-lists-heading">
-      <div className="mb-8 flex items-center justify-between gap-4">
-        <h2
-          id="custom-lists-heading"
-          className="text-display text-xl tracking-tight text-[var(--color-ink)] md:text-[1.55rem]"
-        >
-          Custom lists
-        </h2>
-        <button
-          type="button"
-          onClick={openDialog}
-          className="focus-ring rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-2 text-sm font-medium text-[var(--color-ink)] transition-colors hover:bg-[var(--color-accent-soft)]"
-        >
-          New list
-        </button>
-      </div>
+      <ListsSectionHeading
+        id="custom-lists-heading"
+        action={
+          <button
+            type="button"
+            onClick={openDialog}
+            className="focus-ring rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-2 text-sm font-medium text-[var(--color-ink)] transition-colors hover:bg-[var(--color-accent-soft)]"
+          >
+            New list
+          </button>
+        }
+      >
+        Custom lists
+      </ListsSectionHeading>
 
       {lists.length === 0 ? (
         <p className="text-sm text-[var(--color-muted)]">

@@ -2,6 +2,7 @@
 
 import { CustomListsSection } from "@/src/components/lists/CustomListsSection";
 import { ListBookshelfSection } from "@/src/components/lists/ListBookshelfSection";
+import { ListsSectionHeading } from "@/src/components/lists/ListsSectionHeading";
 import { useListsOverview } from "@/src/hooks/use-lists-overview";
 import type { ListsOverview } from "@/src/types/list";
 
@@ -19,13 +20,10 @@ export function ListsOverviewPage({ initialOverview }: ListsOverviewPageProps) {
         Your lists
       </h1>
 
-      <section aria-labelledby="reading-status-heading" className="mb-12 md:mb-16">
-        <h2
-          id="reading-status-heading"
-          className="text-display mb-8 text-lg tracking-tight text-[var(--color-ink-secondary)] md:text-xl"
-        >
+      <section aria-labelledby="reading-status-heading" className="mb-14 md:mb-20">
+        <ListsSectionHeading id="reading-status-heading">
           Reading status lists
-        </h2>
+        </ListsSectionHeading>
 
         {isError ? (
           <div className="rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-6 text-center">
@@ -54,12 +52,6 @@ export function ListsOverviewPage({ initialOverview }: ListsOverviewPageProps) {
           ))
         )}
       </section>
-
-      <div
-        className="mb-12 border-t border-[var(--color-border)] md:mb-16"
-        role="separator"
-        aria-hidden="true"
-      />
 
       <CustomListsSection lists={overview.customLists} isLoading={isLoading} />
     </div>
