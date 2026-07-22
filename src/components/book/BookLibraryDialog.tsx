@@ -2,6 +2,7 @@
 
 import { useEffect, useId, useRef, useState } from "react";
 import { ListPrivacyIcon } from "@/src/components/lists/ListPrivacyIcon";
+import { QuillSpinner } from "@/src/components/ui/QuillSpinner";
 import { useCreateList } from "@/src/hooks/use-create-list";
 import { READING_STATUS_OPTIONS } from "@/src/lib/lists/reading-status-map";
 import type { BookLibraryState } from "@/src/types/book-library";
@@ -279,9 +280,16 @@ export function BookLibraryDialog({
                   <button
                     type="submit"
                     disabled={createList.isPending}
-                    className="focus-ring rounded-lg bg-[var(--color-accent)] px-4 py-2 text-sm font-medium text-white disabled:opacity-60"
+                    className="focus-ring inline-flex items-center justify-center gap-2 rounded-lg bg-[var(--color-accent)] px-4 py-2 text-sm font-medium text-white disabled:opacity-60"
                   >
-                    {createList.isPending ? "Creating…" : "Create list"}
+                    {createList.isPending ? (
+                      <>
+                        <QuillSpinner size="sm" decorative />
+                        Creating…
+                      </>
+                    ) : (
+                      "Create list"
+                    )}
                   </button>
                 </div>
               </form>
@@ -381,9 +389,16 @@ export function BookLibraryDialog({
               type="button"
               onClick={() => void handleSave()}
               disabled={isSaving}
-              className="focus-ring rounded-lg bg-[var(--color-accent)] px-4 py-2 text-sm font-medium text-white disabled:opacity-60"
+              className="focus-ring inline-flex items-center justify-center gap-2 rounded-lg bg-[var(--color-accent)] px-4 py-2 text-sm font-medium text-white disabled:opacity-60"
             >
-              {isSaving ? "Saving…" : "Save"}
+              {isSaving ? (
+                <>
+                  <QuillSpinner size="sm" decorative />
+                  Saving…
+                </>
+              ) : (
+                "Save"
+              )}
             </button>
           </div>
         </footer>

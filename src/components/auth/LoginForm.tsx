@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { AuthCard } from "@/src/components/auth/AuthCard";
 import { AuthField } from "@/src/components/auth/AuthField";
+import { QuillSpinner } from "@/src/components/ui/QuillSpinner";
 import {
   getSignInErrorMessage,
   useSignIn,
@@ -72,9 +73,16 @@ export function LoginForm() {
         <button
           type="submit"
           disabled={signIn.isPending}
-          className="focus-ring w-full rounded-xl bg-[var(--color-accent)] px-4 py-3 text-sm font-medium text-[var(--color-surface)] disabled:opacity-60"
+          className="focus-ring inline-flex w-full items-center justify-center gap-2 rounded-xl bg-[var(--color-accent)] px-4 py-3 text-sm font-medium text-[var(--color-surface)] disabled:opacity-60"
         >
-          {signIn.isPending ? "Signing in…" : "Sign in"}
+          {signIn.isPending ? (
+            <>
+              <QuillSpinner size="sm" decorative />
+              Signing in…
+            </>
+          ) : (
+            "Sign in"
+          )}
         </button>
         <p className="text-center text-sm text-[var(--color-muted)]">
           Don&apos;t have an account?{" "}

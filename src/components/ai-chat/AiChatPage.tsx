@@ -36,6 +36,7 @@ import {
   QuillMascot,
   type QuillMascotMood,
 } from "@/src/components/ui/QuillMascot";
+import { QuillSpinner } from "@/src/components/ui/QuillSpinner";
 import {
   filterToAllowedApiIds,
   resolveReferentialAddApiIds,
@@ -325,11 +326,9 @@ function MessageParts({
           data-active={toolActivity.active ? "true" : "false"}
           aria-live="polite"
         >
-          <span className="quill-tool-activity__whiskers" aria-hidden="true">
-            <span />
-            <span />
-            <span />
-          </span>
+          {toolActivity.active ? (
+            <QuillSpinner size="sm" decorative />
+          ) : null}
           <span className="quill-tool-activity__text">{toolActivity.label}</span>
         </p>
       ) : null}
@@ -457,7 +456,7 @@ export function AiChatPage() {
   };
 
   return (
-    <div className="ai-chat-page flex min-h-0 w-full min-w-0 max-w-2xl flex-1 flex-col overflow-x-hidden overflow-y-hidden">
+    <div className="ai-chat-page mx-auto flex min-h-0 w-full min-w-0 max-w-2xl flex-1 flex-col overflow-x-hidden overflow-y-hidden">
       <header className="ai-chat-header shrink-0 border-b border-[var(--color-border)]/80 pt-4 pb-4 md:pt-6 md:pb-5">
         <div className="flex items-end gap-3 sm:gap-4">
           <QuillMascot

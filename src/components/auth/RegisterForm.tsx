@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { AuthCard } from "@/src/components/auth/AuthCard";
 import { AuthField } from "@/src/components/auth/AuthField";
+import { QuillSpinner } from "@/src/components/ui/QuillSpinner";
 import {
   getSignUpErrorMessage,
   useSignUp,
@@ -86,9 +87,16 @@ export function RegisterForm() {
         <button
           type="submit"
           disabled={signUp.isPending}
-          className="focus-ring w-full rounded-xl bg-[var(--color-accent)] px-4 py-3 text-sm font-medium text-[var(--color-surface)] disabled:opacity-60"
+          className="focus-ring inline-flex w-full items-center justify-center gap-2 rounded-xl bg-[var(--color-accent)] px-4 py-3 text-sm font-medium text-[var(--color-surface)] disabled:opacity-60"
         >
-          {signUp.isPending ? "Creating account…" : "Create account"}
+          {signUp.isPending ? (
+            <>
+              <QuillSpinner size="sm" decorative />
+              Creating account…
+            </>
+          ) : (
+            "Create account"
+          )}
         </button>
         <p className="text-center text-sm text-[var(--color-muted)]">
           Already have an account?{" "}

@@ -4,6 +4,7 @@ import Link from "next/link";
 import { BookCard } from "@/src/components/book/BookCard";
 import { ListBooksEmpty } from "@/src/components/lists/ListBooksEmpty";
 import { ListPrivacyIcon } from "@/src/components/lists/ListPrivacyIcon";
+import { LoadingState } from "@/src/components/ui/LoadingState";
 import { useListDetail } from "@/src/hooks/use-list-detail";
 import type { ListDetail } from "@/src/types/list";
 
@@ -53,19 +54,7 @@ export function ListDetailPage({ listId, initialDetail }: ListDetailPageProps) {
         </div>
       ) : null}
 
-      {!isError && isLoading && books.length === 0 ? (
-        <div
-          className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5"
-          aria-hidden="true"
-        >
-          {Array.from({ length: 6 }, (_, index) => (
-            <div key={index} className="animate-pulse">
-              <div className="mb-2 aspect-[2/3] rounded-md bg-[var(--color-fill)]" />
-              <div className="h-4 rounded bg-[var(--color-fill)]" />
-            </div>
-          ))}
-        </div>
-      ) : null}
+      {!isError && isLoading && books.length === 0 ? <LoadingState /> : null}
 
       {!isError && books.length === 0 && !isLoading ? (
         <ListBooksEmpty listName={list.name} />

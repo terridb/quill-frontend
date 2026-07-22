@@ -3,6 +3,7 @@
 import { useId, useRef, useState } from "react";
 import { ListBookshelfSection } from "@/src/components/lists/ListBookshelfSection";
 import { ListsSectionHeading } from "@/src/components/lists/ListsSectionHeading";
+import { QuillSpinner } from "@/src/components/ui/QuillSpinner";
 import { useCreateList } from "@/src/hooks/use-create-list";
 import type { ListWithBooks } from "@/src/types/list";
 
@@ -143,9 +144,16 @@ export function CustomListsSection({ lists, isLoading = false }: CustomListsSect
               <button
                 type="submit"
                 disabled={createList.isPending}
-                className="focus-ring rounded-lg bg-[var(--color-accent)] px-4 py-2 text-sm font-medium text-white disabled:opacity-60"
+                className="focus-ring inline-flex items-center justify-center gap-2 rounded-lg bg-[var(--color-accent)] px-4 py-2 text-sm font-medium text-white disabled:opacity-60"
               >
-                {createList.isPending ? "Creating…" : "Create list"}
+                {createList.isPending ? (
+                  <>
+                    <QuillSpinner size="sm" decorative />
+                    Creating…
+                  </>
+                ) : (
+                  "Create list"
+                )}
               </button>
             </div>
           </form>

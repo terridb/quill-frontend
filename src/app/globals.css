@@ -53,6 +53,7 @@ html[data-ai-chat="true"] .app-shell {
 html[data-ai-chat="true"] .app-shell-main {
   display: flex;
   flex-direction: column;
+  align-items: center;
   overflow: hidden;
   overscroll-behavior: none;
   min-width: 0;
@@ -62,6 +63,7 @@ html[data-ai-chat="true"] .app-shell-content {
   display: flex;
   flex: 1;
   flex-direction: column;
+  width: 100%;
   min-height: 0;
   min-width: 0;
   padding-top: 0;
@@ -1263,8 +1265,7 @@ button:disabled {
 }
 
 /*
- * Quill mid-dive status — margin doodle, not a chip or speaker label.
- * Three whisker ticks (sniff) + plain spoken aside.
+ * Quill mid-dive status — spinner + plain spoken aside.
  */
 .quill-tool-activity {
   display: flex;
@@ -1281,53 +1282,6 @@ button:disabled {
   animation: quill-tool-activity-in 280ms ease-out both;
 }
 
-.quill-tool-activity__whiskers {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  gap: 0.2rem;
-  flex-shrink: 0;
-  width: 0.75rem;
-  height: 1.45em;
-  margin: 0;
-  padding: 0;
-}
-
-.quill-tool-activity__whiskers > span {
-  display: block;
-  height: 1.5px;
-  border-radius: 1px;
-  background: color-mix(in srgb, var(--color-accent) 45%, var(--color-border));
-  transform-origin: left center;
-}
-
-.quill-tool-activity__whiskers > span:nth-child(1) {
-  width: 70%;
-}
-.quill-tool-activity__whiskers > span:nth-child(2) {
-  width: 100%;
-}
-.quill-tool-activity__whiskers > span:nth-child(3) {
-  width: 55%;
-}
-
-.quill-tool-activity[data-active="true"] .quill-tool-activity__whiskers > span {
-  background: var(--color-accent);
-  animation: quill-whisker-sniff 1.1s ease-in-out infinite;
-}
-
-.quill-tool-activity[data-active="true"]
-  .quill-tool-activity__whiskers
-  > span:nth-child(2) {
-  animation-delay: 0.12s;
-}
-
-.quill-tool-activity[data-active="true"]
-  .quill-tool-activity__whiskers
-  > span:nth-child(3) {
-  animation-delay: 0.24s;
-}
-
 .quill-tool-activity__text {
   font-family: var(--font-body), system-ui, sans-serif;
   font-size: inherit;
@@ -1335,10 +1289,6 @@ button:disabled {
   font-weight: 400;
   line-height: inherit;
   letter-spacing: 0;
-  color: var(--color-ink-secondary);
-}
-
-.quill-tool-activity[data-active="true"] .quill-tool-activity__text {
   color: var(--color-ink-secondary);
 }
 
@@ -1353,18 +1303,6 @@ button:disabled {
   }
 }
 
-@keyframes quill-whisker-sniff {
-  0%,
-  100% {
-    transform: scaleX(1);
-    opacity: 0.85;
-  }
-  50% {
-    transform: scaleX(0.72);
-    opacity: 1;
-  }
-}
-
 /* Quill mascot — knock out solid black PNG backgrounds on cream UI */
 .quill-mascot-art {
   mix-blend-mode: lighten;
@@ -1376,7 +1314,7 @@ button:disabled {
 
 @keyframes quill-spinner-spin {
   to {
-    transform: rotate(360deg);
+    transform: rotate(-360deg);
   }
 }
 
@@ -1413,8 +1351,7 @@ button:disabled {
   .ai-chat-empty,
   .quill-mascot-enter,
   .quill-spinner-spin,
-  .quill-tool-activity,
-  .quill-tool-activity[data-active="true"] .quill-tool-activity__whiskers > span {
+  .quill-tool-activity {
     transition: none;
     animation: none;
   }

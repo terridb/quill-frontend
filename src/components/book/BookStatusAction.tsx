@@ -9,6 +9,7 @@ import {
 } from "react";
 import { BookLibraryDialog } from "@/src/components/book/BookLibraryDialog";
 import { ChevronDownIcon } from "@/src/components/ui/icons";
+import { QuillSpinner } from "@/src/components/ui/QuillSpinner";
 import { useBookLibrary } from "@/src/hooks/use-book-library";
 import { READING_STATUS_LABELS } from "@/src/types/book";
 
@@ -106,11 +107,18 @@ export function BookStatusActionTrigger({ className = "" }: BookStatusActionTrig
       <div className="flex">
         <button
           type="button"
-          className="focus-ring flex-1 rounded-l-xl bg-[var(--color-accent)] px-4 py-3 text-sm font-medium text-[var(--color-surface)] disabled:opacity-60"
+          className="focus-ring inline-flex flex-1 items-center justify-center gap-2 rounded-l-xl bg-[var(--color-accent)] px-4 py-3 text-sm font-medium text-[var(--color-surface)] disabled:opacity-60"
           onClick={openDialog}
           disabled={isDisabled}
         >
-          {isLoading ? "Loading…" : buttonLabel}
+          {isLoading ? (
+            <>
+              <QuillSpinner size="sm" decorative />
+              Loading…
+            </>
+          ) : (
+            buttonLabel
+          )}
         </button>
         <button
           type="button"

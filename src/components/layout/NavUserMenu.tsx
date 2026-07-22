@@ -11,6 +11,7 @@ import {
   SignOutIcon,
   UserIcon,
 } from "@/src/components/ui/icons";
+import { QuillSpinner } from "@/src/components/ui/QuillSpinner";
 import { isOutsideElement } from "@/src/lib/dom/safe-event-target";
 import type { Profile } from "@/src/types/profile";
 
@@ -159,7 +160,11 @@ export function NavUserMenu({ profile, email, showListsLink = false }: NavUserMe
               className={`${menuItemClassName} w-full disabled:opacity-60`}
               onClick={() => void handleSignOut()}
             >
-              <SignOutIcon className="size-4 shrink-0 text-[var(--color-ink-secondary)]" />
+              {isSigningOut ? (
+                <QuillSpinner size="sm" decorative />
+              ) : (
+                <SignOutIcon className="size-4 shrink-0 text-[var(--color-ink-secondary)]" />
+              )}
               {isSigningOut ? "Signing out…" : "Sign out"}
             </button>
           </li>
