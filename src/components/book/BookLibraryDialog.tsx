@@ -339,68 +339,79 @@ export function BookLibraryDialog({
           ) : null}
         </div>
 
-        <footer className="flex flex-wrap items-center justify-between gap-3 border-t border-[var(--color-border)] px-6 py-4">
-          {isInLibrary ? (
-            isConfirmingRemove ? (
-              <div className="flex flex-wrap items-center gap-2">
-                <span className="text-sm text-[var(--color-ink-secondary)]">
-                  Remove this book from all lists?
-                </span>
-                <button
-                  type="button"
-                  onClick={() => void handleRemove()}
-                  disabled={isSaving}
-                  className="focus-ring rounded-lg bg-[#8b3a3a] px-3 py-2 text-sm font-medium text-white disabled:opacity-60"
-                >
-                  Confirm remove
-                </button>
+        <footer className="border-t border-[var(--color-border)] px-6 py-4">
+          {isConfirmingRemove ? (
+            <div className="flex flex-col gap-3">
+              <p className="text-sm text-[var(--color-ink-secondary)]">
+                Remove this book from all lists?
+              </p>
+              <div className="flex gap-2">
                 <button
                   type="button"
                   onClick={() => setIsConfirmingRemove(false)}
                   disabled={isSaving}
-                  className="focus-ring rounded-lg px-3 py-2 text-sm text-[var(--color-ink-secondary)] hover:text-[var(--color-ink)] disabled:opacity-60"
+                  className="focus-ring flex-1 rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-2.5 text-sm font-medium text-[var(--color-ink)] transition-colors hover:bg-[var(--color-accent-soft)] disabled:opacity-60"
                 >
                   Keep in library
                 </button>
+                <button
+                  type="button"
+                  onClick={() => void handleRemove()}
+                  disabled={isSaving}
+                  className="focus-ring inline-flex flex-1 items-center justify-center gap-2 rounded-lg bg-[#8b3a3a] px-4 py-2.5 text-sm font-medium text-white disabled:opacity-60"
+                >
+                  {isSaving ? (
+                    <>
+                      <QuillSpinner size="sm" decorative />
+                      Removing…
+                    </>
+                  ) : (
+                    "Confirm remove"
+                  )}
+                </button>
               </div>
-            ) : (
-              <button
-                type="button"
-                onClick={() => setIsConfirmingRemove(true)}
-                disabled={isSaving}
-                className="focus-ring rounded-lg px-3 py-2 text-sm text-[#8b3a3a] transition-colors hover:bg-[#8b3a3a]/10 disabled:opacity-60"
-              >
-                Remove from library
-              </button>
-            )
+            </div>
           ) : (
-            <span aria-hidden="true" />
-          )}
-          <div className="ml-auto flex gap-2">
-            <button
-              type="button"
-              onClick={closeDialog}
-              disabled={isSaving}
-              className="focus-ring rounded-lg px-4 py-2 text-sm text-[var(--color-ink-secondary)] hover:text-[var(--color-ink)] disabled:opacity-60"
-            >
-              Cancel
-            </button>
-            <button
-              type="button"
-              onClick={() => void handleSave()}
-              disabled={isSaving}
-              className="focus-ring inline-flex items-center justify-center gap-2 rounded-lg bg-[var(--color-accent)] px-4 py-2 text-sm font-medium text-white disabled:opacity-60"
-            >
-              {isSaving ? (
-                <>
-                  <QuillSpinner size="sm" decorative />
-                  Saving…
-                </>
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              {isInLibrary ? (
+                <button
+                  type="button"
+                  onClick={() => setIsConfirmingRemove(true)}
+                  disabled={isSaving}
+                  className="focus-ring rounded-lg px-3 py-2 text-sm text-[#8b3a3a] transition-colors hover:bg-[#8b3a3a]/10 disabled:opacity-60"
+                >
+                  Remove from library
+                </button>
               ) : (
-                "Save"
+                <span aria-hidden="true" />
               )}
-            </button>
-          </div>
+              <div className="ml-auto flex gap-2">
+                <button
+                  type="button"
+                  onClick={closeDialog}
+                  disabled={isSaving}
+                  className="focus-ring rounded-lg px-4 py-2 text-sm text-[var(--color-ink-secondary)] hover:text-[var(--color-ink)] disabled:opacity-60"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={() => void handleSave()}
+                  disabled={isSaving}
+                  className="focus-ring inline-flex items-center justify-center gap-2 rounded-lg bg-[var(--color-accent)] px-4 py-2 text-sm font-medium text-white disabled:opacity-60"
+                >
+                  {isSaving ? (
+                    <>
+                      <QuillSpinner size="sm" decorative />
+                      Saving…
+                    </>
+                  ) : (
+                    "Save"
+                  )}
+                </button>
+              </div>
+            </div>
+          )}
         </footer>
         </div>
       </div>
