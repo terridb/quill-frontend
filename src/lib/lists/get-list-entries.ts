@@ -1,4 +1,5 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { resolveCoverUrl } from "@/src/lib/books/google-books/resolve-cover-url";
 import { mapListEntryRow } from "@/src/lib/lists/map-list-row";
 import type { ListEntryWithBook } from "@/src/types/list";
 import type { Database } from "@/src/types/database";
@@ -37,7 +38,14 @@ export async function getListEntries(
     return [];
   }
 
-  return data
+  const entries = data
     .map((row) => mapListEntryRow(row))
     .filter((entry): entry is ListEntryWithBook => entry !== null);
+
+  return Promise.all(
+    entries.map(async (entry) => ({
+      ...entry,
+      coverUrl: await resolveCoverUrl(entry.coverUrl, "medium"),
+    })),
+  );
 }

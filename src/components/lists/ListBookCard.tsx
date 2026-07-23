@@ -36,6 +36,7 @@ export function ListBookCard({
           fill
           sizes="(max-width: 640px) 45vw, 160px"
           className="object-cover"
+          quality={85}
         />
       ) : (
         <div className="flex h-full items-center justify-center px-1 text-center text-[10px] leading-tight text-[var(--color-muted)]">

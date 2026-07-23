@@ -24,6 +24,10 @@ import { fetchAuthorGoogleBooks } from "@/src/lib/books/google-books/fetch-autho
 import { fetchGoogleVolume } from "@/src/lib/books/google-books/fetch-google-volume";
 import { fetchRelatedGoogleBooks } from "@/src/lib/books/google-books/fetch-related-books";
 import { getVolumeLanguage } from "@/src/lib/books/google-books/is-recommendable-volume";
+import {
+  resolveCoverUrl,
+  resolveRelatedBookCovers,
+} from "@/src/lib/books/google-books/resolve-cover-url";
 import { createClient } from "@/src/lib/supabase/server";
 
 function buildExclusion(apiId: string, isbn: string | null): BookExclusion {
@@ -145,25 +149,30 @@ async function fetchBookDetailUncached(apiId: string): Promise<BookDetail> {
     const primaryAuthor = book.author?.split(",")[0]?.trim() ?? null;
     const exclusion = buildExclusion(book.api_id, book.isbn);
 
-    const [relatedBooks, authorBooks] = await Promise.all([
+    const [relatedBooks, authorBooks, coverUrl] = await Promise.all([
       fetchRelatedBooksForCatalogRow(supabase, {
         genreLabels,
         subjectTags,
         exclusion,
         language: book.language,
         primaryAuthor,
-      }),
+      }).then((books) => resolveRelatedBookCovers(books, "medium")),
       primaryAuthor
         ? fetchAuthorBooksForCatalogRow(
             supabase,
             primaryAuthor,
             exclusion,
             book.language,
-          )
+          ).then((books) => resolveRelatedBookCovers(books, "medium"))
         : Promise.resolve([]),
+      resolveCoverUrl(book.cover_url, "high"),
     ]);
 
-    return mapBookRowToBookDetail(book, relatedBooks, authorBooks);
+    return mapBookRowToBookDetail(
+      { ...book, cover_url: coverUrl },
+      relatedBooks,
+      authorBooks,
+    );
   }
 
   return fetchGoogleBookDetail(apiId);
