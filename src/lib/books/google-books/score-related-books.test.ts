@@ -68,6 +68,22 @@ describe("hasGenreOverlap", () => {
     const volume = makeVolume("miss", ["Fiction / Mystery"]);
     expect(hasGenreOverlap(volume, source)).toBe(false);
   });
+
+  it("rejects fantasy romance for a romance-only source", () => {
+    const volume = makeVolume("fantasymance", [
+      "Fiction / Fantasy / Romance",
+    ]);
+    expect(hasGenreOverlap(volume, source)).toBe(false);
+  });
+
+  it("allows a single shared genre when the source has multiple genres", () => {
+    const fantasymanceSource = {
+      genreLabels: ["Fantasy", "Romance"],
+      subjectTags: [],
+    };
+    const fantasyOnly = makeVolume("fantasy", ["Fiction / Fantasy"]);
+    expect(hasGenreOverlap(fantasyOnly, fantasymanceSource)).toBe(true);
+  });
 });
 
 describe("getMinRelatedScore", () => {

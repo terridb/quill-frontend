@@ -107,6 +107,24 @@ function passesMinRelatedScore(
   return false;
 }
 
+/**
+ * Candidate genres must not introduce flavors the source lacks.
+ * A Romance-only book should not match Fantasy+Romance; a Fantasy+Romance
+ * source still accepts Fantasy-only or Romance-only candidates.
+ */
+export function areCandidateGenresCompatible(
+  candidateGenres: string[],
+  sourceGenres: string[],
+): boolean {
+  if (sourceGenres.length === 0 || candidateGenres.length === 0) {
+    return true;
+  }
+
+  const sourceSet = new Set(sourceGenres.map((label) => label.toLowerCase()));
+
+  return candidateGenres.every((genre) => sourceSet.has(genre.toLowerCase()));
+}
+
 export function hasGenreOverlap(
   volume: GoogleBooksVolume,
   source: RelatedBookSignals,
@@ -120,14 +138,9 @@ export function hasGenreOverlap(
     volume.volumeInfo.mainCategory,
   );
 
-  if (candidate.genreLabels.length === 0) {
-    return true;
-  }
-
-  const sourceGenres = new Set(source.genreLabels.map((label) => label.toLowerCase()));
-
-  return candidate.genreLabels.some((genre) =>
-    sourceGenres.has(genre.toLowerCase()),
+  return areCandidateGenresCompatible(
+    candidate.genreLabels,
+    source.genreLabels,
   );
 }
 
