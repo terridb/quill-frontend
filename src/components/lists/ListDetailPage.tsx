@@ -1,12 +1,14 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { useEffect, useId, useRef, useState } from "react";
 import { ListBookCard } from "@/src/components/lists/ListBookCard";
 import { ListBooksEmpty } from "@/src/components/lists/ListBooksEmpty";
 import { ListPrivacyIcon } from "@/src/components/lists/ListPrivacyIcon";
 import { QuillSpinner } from "@/src/components/ui/QuillSpinner";
 import { LoadingState } from "@/src/components/ui/LoadingState";
+import { useDeleteList } from "@/src/hooks/use-delete-list";
 import { useListDetail } from "@/src/hooks/use-list-detail";
 import { useRemoveListEntries } from "@/src/hooks/use-remove-list-entries";
 import type { ListDetail } from "@/src/types/list";
@@ -17,6 +19,7 @@ export interface ListDetailPageProps {
 }
 
 export function ListDetailPage({ listId, initialDetail }: ListDetailPageProps) {
+  const router = useRouter();
   const { data, isLoading, isError, refetch } = useListDetail(listId, initialDetail);
   const detail = data ?? initialDetail;
   const { list, books, isOwner } = detail;
@@ -24,8 +27,16 @@ export function ListDetailPage({ listId, initialDetail }: ListDetailPageProps) {
   const [isSelecting, setIsSelecting] = useState(false);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(() => new Set());
   const [removeError, setRemoveError] = useState<string | null>(null);
+  const [isDeleteOpen, setIsDeleteOpen] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
+
+  const deleteDialogRef = useRef<HTMLDialogElement>(null);
+  const deleteTitleId = useId();
 
   const removeEntries = useRemoveListEntries(listId);
+  const deleteList = useDeleteList();
+
+  const canDelete = isOwner && !list.isDefault;
 
   useEffect(() => {
     if (books.length === 0 && isSelecting) {
@@ -38,6 +49,21 @@ export function ListDetailPage({ listId, initialDetail }: ListDetailPageProps) {
     setIsSelecting(false);
     setSelectedIds(new Set());
     setRemoveError(null);
+  };
+
+  const openDeleteDialog = () => {
+    setDeleteError(null);
+    setIsDeleteOpen(true);
+    deleteDialogRef.current?.showModal();
+  };
+
+  const closeDeleteDialog = () => {
+    if (deleteList.isPending) {
+      return;
+    }
+    setIsDeleteOpen(false);
+    setDeleteError(null);
+    deleteDialogRef.current?.close();
   };
 
   const toggleSelect = (entryId: string) => {
@@ -73,8 +99,27 @@ export function ListDetailPage({ listId, initialDetail }: ListDetailPageProps) {
     }
   };
 
+  const handleDeleteList = async () => {
+    if (deleteList.isPending) {
+      return;
+    }
+
+    setDeleteError(null);
+
+    try {
+      await deleteList.mutateAsync(listId);
+      router.push("/lists");
+      router.refresh();
+    } catch (error) {
+      setDeleteError(
+        error instanceof Error ? error.message : "Unable to delete list",
+      );
+    }
+  };
+
   const selectedCount = selectedIds.size;
   const showSelectControls = isOwner && books.length > 0;
+  const showHeaderActions = canDelete || showSelectControls;
 
   return (
     <div className={isSelecting ? "pb-24" : undefined}>
@@ -101,21 +146,34 @@ export function ListDetailPage({ listId, initialDetail }: ListDetailPageProps) {
           </div>
         </div>
 
-        {showSelectControls ? (
-          <button
-            type="button"
-            onClick={() => {
-              if (isSelecting) {
-                exitSelectMode();
-              } else {
-                setIsSelecting(true);
-                setRemoveError(null);
-              }
-            }}
-            className="focus-ring shrink-0 rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-2 text-sm font-medium text-[var(--color-ink)] transition-colors hover:bg-[var(--color-accent-soft)] md:px-4"
-          >
-            {isSelecting ? "Done" : "Remove books"}
-          </button>
+        {showHeaderActions ? (
+          <div className="flex shrink-0 flex-wrap items-center justify-end gap-2">
+            {canDelete && !isSelecting ? (
+              <button
+                type="button"
+                onClick={openDeleteDialog}
+                className="focus-ring rounded-lg px-3 py-2 text-sm font-medium text-[#8b3a3a] transition-colors hover:bg-[#8b3a3a]/10 md:px-4"
+              >
+                Delete list
+              </button>
+            ) : null}
+            {showSelectControls ? (
+              <button
+                type="button"
+                onClick={() => {
+                  if (isSelecting) {
+                    exitSelectMode();
+                  } else {
+                    setIsSelecting(true);
+                    setRemoveError(null);
+                  }
+                }}
+                className="focus-ring rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-2 text-sm font-medium text-[var(--color-ink)] transition-colors hover:bg-[var(--color-accent-soft)] md:px-4"
+              >
+                {isSelecting ? "Done" : "Remove books"}
+              </button>
+            ) : null}
+          </div>
         ) : null}
       </div>
 
@@ -181,6 +239,64 @@ export function ListDetailPage({ listId, initialDetail }: ListDetailPageProps) {
           </div>
         </div>
       ) : null}
+
+      <dialog
+        ref={deleteDialogRef}
+        aria-labelledby={deleteTitleId}
+        aria-modal="true"
+        className="fixed top-1/2 left-1/2 w-[min(calc(100vw-2rem),24rem)] max-h-[calc(100vh-2rem)] -translate-x-1/2 -translate-y-1/2 rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] p-6 shadow-[var(--shadow-md)] backdrop:bg-black/40"
+        onClose={() => setIsDeleteOpen(false)}
+        onCancel={(event) => {
+          if (deleteList.isPending) {
+            event.preventDefault();
+          }
+        }}
+      >
+        {isDeleteOpen ? (
+          <div>
+            <h3
+              id={deleteTitleId}
+              className="text-display text-lg tracking-tight text-[var(--color-ink)]"
+            >
+              Delete list?
+            </h3>
+            <p className="mt-2 text-sm text-[var(--color-ink-secondary)]">
+              “{list.name}” will be permanently deleted. Books on this list are
+              not removed from your other shelves.
+            </p>
+            {deleteError ? (
+              <p className="mt-3 text-sm text-[#8b3a3a]" role="alert">
+                {deleteError}
+              </p>
+            ) : null}
+            <div className="mt-6 flex justify-end gap-2">
+              <button
+                type="button"
+                onClick={closeDeleteDialog}
+                disabled={deleteList.isPending}
+                className="focus-ring rounded-lg px-4 py-2 text-sm text-[var(--color-ink-secondary)] hover:text-[var(--color-ink)] disabled:opacity-60"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={() => void handleDeleteList()}
+                disabled={deleteList.isPending}
+                className="focus-ring inline-flex items-center justify-center gap-2 rounded-lg bg-[#8b3a3a] px-4 py-2 text-sm font-medium text-white disabled:opacity-60"
+              >
+                {deleteList.isPending ? (
+                  <>
+                    <QuillSpinner size="sm" decorative />
+                    Deleting…
+                  </>
+                ) : (
+                  "Delete list"
+                )}
+              </button>
+            </div>
+          </div>
+        ) : null}
+      </dialog>
     </div>
   );
 }

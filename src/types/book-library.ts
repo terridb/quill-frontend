@@ -10,6 +10,7 @@ export interface BookLibraryState {
 
 export interface UpdateBookLibraryInput {
   readingStatus: ReadingStatus | null;
-  customListIds: string[];
+  /** When omitted, custom-list membership is left unchanged. */
+  customListIds?: string[];
   removeFromLibrary?: boolean;
 }

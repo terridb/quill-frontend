@@ -37,11 +37,20 @@ export function createGetReadingActivityTool(ctx: AiToolContext) {
           return { days, logs: [] };
         }
 
-        const entryIds = [...new Set(logs.map((log) => log.list_entry_id))];
-        const { data: entries } = await ctx.supabase
-          .from("list_entries")
-          .select("id, book_id")
-          .in("id", entryIds);
+        const entryIds = [
+          ...new Set(
+            logs
+              .map((log) => log.list_entry_id)
+              .filter((id): id is string => id !== null),
+          ),
+        ];
+        const { data: entries } =
+          entryIds.length > 0
+            ? await ctx.supabase
+                .from("list_entries")
+                .select("id, book_id")
+                .in("id", entryIds)
+            : { data: [] as { id: string; book_id: string }[] };
 
         const bookIds = [
           ...new Set((entries ?? []).map((entry) => entry.book_id)),

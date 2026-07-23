@@ -16,7 +16,8 @@ export const updateBookLibrarySchema = z.object({
   readingStatus: z
     .enum(["want_to_read", "currently_reading", "finished", "did_not_finish"])
     .nullable(),
-  customListIds: z.array(z.string().uuid()),
+  /** When omitted, custom-list membership is left unchanged. */
+  customListIds: z.array(z.string().uuid()).optional(),
   removeFromLibrary: z.boolean().optional(),
 });
 
@@ -56,7 +57,8 @@ export async function updateBookLibrary(
   }
 
   const willAddToAnyList =
-    input.readingStatus !== null || input.customListIds.length > 0;
+    input.readingStatus !== null ||
+    (input.customListIds !== undefined && input.customListIds.length > 0);
 
   const bookRecord = willAddToAnyList
     ? await ensureBookRecord(supabase, apiId)
@@ -73,7 +75,6 @@ export async function updateBookLibrary(
   const defaultLists = userLists.filter((list) => list.isDefault);
   const customLists = userLists.filter((list) => !list.isDefault);
   const customListIdSet = new Set(customLists.map((list) => list.id));
-  const validCustomIds = input.customListIds.filter((id) => customListIdSet.has(id));
 
   const { data: currentEntries, error: fetchError } = await supabase
     .from("list_entries")
@@ -101,16 +102,34 @@ export async function updateBookLibrary(
   const currentStatus = currentDefaultList
     ? listNameToReadingStatus(currentDefaultList.name)
     : null;
+  const currentDefaultEntryId = currentDefaultList
+    ? currentByListId.get(currentDefaultList.id)
+    : undefined;
 
   if (input.readingStatus !== currentStatus) {
-    for (const list of defaultLists) {
-      const entryId = currentByListId.get(list.id);
-      if (entryId) {
-        deleteIds.push(entryId);
-      }
-    }
+    if (currentDefaultEntryId && input.readingStatus) {
+      const targetName = readingStatusToListName(input.readingStatus);
+      const targetList = defaultLists.find((list) => list.name === targetName);
 
-    if (input.readingStatus) {
+      if (!targetList) {
+        throw new Error("Unable to update library");
+      }
+
+      // Move in place so reading_logs stay attached to this entry.
+      const { error: moveError } = await supabase
+        .from("list_entries")
+        .update({
+          list_id: targetList.id,
+          finished_at: input.readingStatus === "finished" ? undefined : null,
+        })
+        .eq("id", currentDefaultEntryId);
+
+      if (moveError) {
+        throw new Error("Unable to update library");
+      }
+    } else if (currentDefaultEntryId && !input.readingStatus) {
+      deleteIds.push(currentDefaultEntryId);
+    } else if (!currentDefaultEntryId && input.readingStatus) {
       const targetName = readingStatusToListName(input.readingStatus);
       const targetList = defaultLists.find((list) => list.name === targetName);
 
@@ -124,22 +143,27 @@ export async function updateBookLibrary(
     }
   }
 
-  const desiredCustomSet = new Set(validCustomIds);
+  if (input.customListIds !== undefined) {
+    const validCustomIds = input.customListIds.filter((id) =>
+      customListIdSet.has(id),
+    );
+    const desiredCustomSet = new Set(validCustomIds);
 
-  for (const list of customLists) {
-    const hasEntry = currentByListId.has(list.id);
-    const shouldHave = desiredCustomSet.has(list.id);
+    for (const list of customLists) {
+      const hasEntry = currentByListId.has(list.id);
+      const shouldHave = desiredCustomSet.has(list.id);
 
-    if (shouldHave && !hasEntry) {
-      inserts.push({
-        list_id: list.id,
-        book_id: internalBookId,
-        page_count: catalogPageCount,
-      });
-    } else if (!shouldHave && hasEntry) {
-      const entryId = currentByListId.get(list.id);
-      if (entryId) {
-        deleteIds.push(entryId);
+      if (shouldHave && !hasEntry) {
+        inserts.push({
+          list_id: list.id,
+          book_id: internalBookId,
+          page_count: catalogPageCount,
+        });
+      } else if (!shouldHave && hasEntry) {
+        const entryId = currentByListId.get(list.id);
+        if (entryId) {
+          deleteIds.push(entryId);
+        }
       }
     }
   }
