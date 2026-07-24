@@ -18,6 +18,7 @@ import {
   googleBooksSearchResponseSchema,
   type GoogleBooksVolume,
 } from "@/src/lib/books/google-books/schemas";
+import { dedupeRelatedBooks } from "@/src/lib/books/merge-related-books";
 
 const PAGE_SIZE = 40;
 const MAX_PAGES_PER_QUERY = 3;
@@ -156,8 +157,9 @@ export async function fetchRelatedGoogleBooks({
     },
   );
 
-  return ranked
-    .filter((volume) => isRecommendableVolume(volume, criteria))
-    .map(mapVolumeToRelatedBook)
-    .filter((book) => book.bookId !== exclusion.bookId);
+  return dedupeRelatedBooks(
+    ranked
+      .filter((volume) => isRecommendableVolume(volume, criteria))
+      .map(mapVolumeToRelatedBook),
+  ).slice(0, MAX_RELATED);
 }

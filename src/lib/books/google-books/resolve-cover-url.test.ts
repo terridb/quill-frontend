@@ -3,6 +3,7 @@ import { createHash } from "node:crypto";
 import {
   isGoogleUnavailableCoverImage,
   readCoverImageSize,
+  resolveCoverUrl,
 } from "@/src/lib/books/google-books/resolve-cover-url";
 
 describe("isGoogleUnavailableCoverImage", () => {
@@ -17,6 +18,16 @@ describe("isGoogleUnavailableCoverImage", () => {
     grayPng[3] = 0x47;
     grayPng[25] = 0;
     expect(isGoogleUnavailableCoverImage(grayPng)).toBe(true);
+  });
+
+  it("rejects indexed-color PNGs used as high-zoom placeholders", () => {
+    const indexedPng = new Uint8Array(26);
+    indexedPng[0] = 0x89;
+    indexedPng[1] = 0x50;
+    indexedPng[2] = 0x4e;
+    indexedPng[3] = 0x47;
+    indexedPng[25] = 3;
+    expect(isGoogleUnavailableCoverImage(indexedPng)).toBe(true);
   });
 
   it("allows color PNGs that are not known placeholders", () => {
@@ -72,5 +83,25 @@ describe("readCoverImageSize", () => {
     bytes[23] = 0xc2;
 
     expect(readCoverImageSize(bytes)).toEqual({ width: 300, height: 450 });
+  });
+});
+
+describe("resolveCoverUrl", () => {
+  it("falls back to stable zoom=1 when every zoom is a placeholder", async () => {
+    // Volume whose content API only serves Google's gray "not available" art.
+    const url =
+      "https://books.google.com/books/content?id=iWcrEAAAQBAJ&printsec=frontcover&img=1&zoom=1&source=gbs_api";
+    const resolved = await resolveCoverUrl(url, "high");
+    expect(resolved).toBe(
+      "https://books.google.com/books/content?id=iWcrEAAAQBAJ&printsec=frontcover&img=1&zoom=1&source=gbs_api",
+    );
+  });
+
+  it("keeps a real cover instead of returning null", async () => {
+    const url =
+      "https://books.google.com/books/content?id=_m7vPwAACAAJ&printsec=frontcover&img=1&zoom=1&source=gbs_api";
+    const resolved = await resolveCoverUrl(url, "high");
+    expect(resolved).toContain("id=_m7vPwAACAAJ");
+    expect(resolved).not.toBeNull();
   });
 });

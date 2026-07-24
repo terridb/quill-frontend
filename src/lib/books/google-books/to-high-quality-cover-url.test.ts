@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   getCoverUrlCandidates,
+  getStableCoverUrl,
   isPlausibleBookCover,
   toHighQualityCoverUrl,
 } from "@/src/lib/books/google-books/to-high-quality-cover-url";
@@ -40,6 +41,17 @@ describe("getCoverUrlCandidates", () => {
     ]);
     expect(candidates.at(-1)).toBe(stored);
   });
+
+  it("rewrites publisher cover paths to stable /books/content URLs", () => {
+    const publisher =
+      "https://books.google.com/books/publisher/content?id=ztdIEQAAQBAJ&printsec=frontcover&img=1&zoom=1&imgtk=TOKEN&source=gbs_api";
+    const candidates = getCoverUrlCandidates(publisher, "high");
+
+    expect(candidates[0]).toContain("/books/content?");
+    expect(candidates[0]).not.toContain("/books/publisher/");
+    expect(candidates[0]).not.toContain("imgtk=");
+    expect(candidates[0]).toContain("zoom=4");
+  });
 });
 
 describe("toHighQualityCoverUrl", () => {
@@ -55,6 +67,19 @@ describe("toHighQualityCoverUrl", () => {
 
   it("returns the original string when the URL is invalid", () => {
     expect(toHighQualityCoverUrl("not a url")).toBe("not a url");
+  });
+});
+
+describe("getStableCoverUrl", () => {
+  it("rewrites to zoom=1 without fragile tokens", () => {
+    expect(getStableCoverUrl(stored)).toBe(
+      "https://books.google.com/books/content?id=1MXLDwAAQBAJ&printsec=frontcover&img=1&zoom=1&source=gbs_api",
+    );
+  });
+
+  it("leaves non-Google URLs unchanged", () => {
+    const url = "https://example.com/covers/dune.jpg";
+    expect(getStableCoverUrl(url)).toBe(url);
   });
 });
 

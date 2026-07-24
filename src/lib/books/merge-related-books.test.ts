@@ -9,8 +9,9 @@ function book(
   bookId: string,
   title: string,
   authors = "Ali Hazelwood",
+  coverUrl: string | null = null,
 ): RelatedBook {
-  return { bookId, title, authors, coverUrl: null };
+  return { bookId, title, authors, coverUrl };
 }
 
 describe("dedupeRelatedBooks", () => {
@@ -23,6 +24,21 @@ describe("dedupeRelatedBooks", () => {
       ]).map((item) => item.bookId),
     ).toEqual(["local-mate", "bride"]);
   });
+
+  it("prefers an edition that has a cover over a blank duplicate", () => {
+    expect(
+      dedupeRelatedBooks([
+        book("blank-mate", "Mate", "Ali Hazelwood", null),
+        book(
+          "covered-mate",
+          "Mate",
+          "Ali Hazelwood",
+          "https://books.google.com/cover.jpg",
+        ),
+        book("bride", "Bride", "Ali Hazelwood", "https://books.google.com/b.jpg"),
+      ]).map((item) => item.bookId),
+    ).toEqual(["covered-mate", "bride"]);
+  });
 });
 
 describe("mergeRelatedBooks", () => {
@@ -34,5 +50,22 @@ describe("mergeRelatedBooks", () => {
         20,
       ).map((item) => item.bookId),
     ).toEqual(["UUdKEQAAQBAJ", "bride", "deep-end"]);
+  });
+
+  it("prefers the covered edition when merging catalog and Google", () => {
+    expect(
+      mergeRelatedBooks(
+        [book("blank-mate", "Mate", "Ali Hazelwood", null)],
+        [
+          book(
+            "covered-mate",
+            "Mate",
+            "Ali Hazelwood",
+            "https://books.google.com/cover.jpg",
+          ),
+        ],
+        20,
+      ).map((item) => item.bookId),
+    ).toEqual(["covered-mate"]);
   });
 });

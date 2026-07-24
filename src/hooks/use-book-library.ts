@@ -63,7 +63,9 @@ export function useBookLibrary(bookId: string) {
 
   return {
     library,
-    isLoading: query.isLoading,
+    // Pending (no data yet), including SSR idle-pending — not isLoading,
+    // which is false when status is pending and fetchStatus is idle.
+    isLoading: query.isPending,
     isError: query.isError,
     isInLibrary,
     saveLibrary: mutation.mutateAsync,

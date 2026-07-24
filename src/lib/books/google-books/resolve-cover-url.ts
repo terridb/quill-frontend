@@ -1,11 +1,14 @@
 import { createHash } from "node:crypto";
 import {
   getCoverUrlCandidates,
+  getStableCoverUrl,
   isPlausibleBookCover,
   type CoverImageQuality,
 } from "@/src/lib/books/google-books/to-high-quality-cover-url";
 
-const probeCache = new Map<string, boolean>();
+type ProbeResult = "ok" | "unavailable" | "error";
+
+const probeCache = new Map<string, ProbeResult>();
 const resolveCache = new Map<string, string | null>();
 
 /**
@@ -45,7 +48,9 @@ export function isGoogleUnavailableCoverImage(bytes: Uint8Array): boolean {
 
   if (isPng && bytes.length >= 26) {
     // IHDR color type 0 = grayscale (common for smaller placeholders)
-    if (bytes[25] === 0) {
+    // Color type 3 = indexed/palette — Google returns these for missing high
+    // zooms (tiny PNGs at 300–800px) while zoom=1 still has a real JPEG cover.
+    if (bytes[25] === 0 || bytes[25] === 3) {
       return true;
     }
   }
@@ -135,7 +140,7 @@ export function readCoverImageSize(
   return null;
 }
 
-async function probeCoverUrl(url: string): Promise<boolean> {
+async function probeCoverUrl(url: string): Promise<ProbeResult> {
   const cached = probeCache.get(url);
   if (cached !== undefined) {
     return cached;
@@ -150,8 +155,8 @@ async function probeCoverUrl(url: string): Promise<boolean> {
     });
 
     if (!response.ok && response.status !== 206) {
-      probeCache.set(url, false);
-      return false;
+      // Transient upstream failure — do not cache; retry next time.
+      return "error";
     }
 
     const bytes = new Uint8Array(await response.arrayBuffer());
@@ -164,37 +169,37 @@ async function probeCoverUrl(url: string): Promise<boolean> {
       (fullLength !== undefined && bytes.length >= Number(fullLength));
 
     if (haveFullFile && isGoogleUnavailableCoverImage(bytes)) {
-      probeCache.set(url, false);
-      return false;
+      probeCache.set(url, "unavailable");
+      return "unavailable";
     }
 
     // Partial JPEG: still reject grayscale when SOF is present.
     if (readJpegComponentCount(bytes) === 1) {
-      probeCache.set(url, false);
-      return false;
+      probeCache.set(url, "unavailable");
+      return "unavailable";
     }
 
-    // Partial PNG: reject grayscale IHDR.
+    // Partial PNG: reject grayscale / indexed placeholder IHDR.
     if (
       bytes[0] === 0x89 &&
       bytes[1] === 0x50 &&
       bytes.length >= 26 &&
-      bytes[25] === 0
+      (bytes[25] === 0 || bytes[25] === 3)
     ) {
-      probeCache.set(url, false);
-      return false;
+      probeCache.set(url, "unavailable");
+      return "unavailable";
     }
 
     const size = readCoverImageSize(bytes);
     const isJpeg = bytes[0] === 0xff && bytes[1] === 0xd8;
     if (!size && isJpeg) {
-      probeCache.set(url, true);
-      return true;
+      probeCache.set(url, "ok");
+      return "ok";
     }
 
     if (!size || !isPlausibleBookCover(size.width, size.height)) {
-      probeCache.set(url, false);
-      return false;
+      probeCache.set(url, "unavailable");
+      return "unavailable";
     }
 
     // Color PNG placeholders are ~300×391; without a full-file hash, treat
@@ -206,15 +211,15 @@ async function probeCoverUrl(url: string): Promise<boolean> {
       size.height === 391 &&
       bytes.length <= 20_000
     ) {
-      probeCache.set(url, false);
-      return false;
+      probeCache.set(url, "unavailable");
+      return "unavailable";
     }
 
-    probeCache.set(url, true);
-    return true;
+    probeCache.set(url, "ok");
+    return "ok";
   } catch {
-    probeCache.set(url, false);
-    return false;
+    // Timeouts / network blips — never cache as a permanent miss.
+    return "error";
   }
 }
 
@@ -222,6 +227,10 @@ async function probeCoverUrl(url: string): Promise<boolean> {
  * Pick the sharpest Google cover zoom that actually returns a real cover.
  * Falls back through lower zooms when a candidate is missing or the
  * "image not available" placeholder.
+ *
+ * When every probe fails (timeouts) or only placeholders exist, still return a
+ * stable zoom=1 URL so search and detail stay consistent — search renders the
+ * raw catalog URL without probing.
  */
 export async function resolveCoverUrl(
   coverUrl: string | null,
@@ -238,26 +247,54 @@ export async function resolveCoverUrl(
   }
 
   const candidates = getCoverUrlCandidates(coverUrl, quality);
+  let sawTransportError = false;
 
   for (const candidate of candidates) {
-    if (await probeCoverUrl(candidate)) {
+    const result = await probeCoverUrl(candidate);
+    if (result === "ok") {
       resolveCache.set(cacheKey, candidate);
       return candidate;
     }
+    if (result === "error") {
+      sawTransportError = true;
+    }
   }
 
-  resolveCache.set(cacheKey, null);
-  return null;
+  // Keep a displayable URL. Prefer rewritten zoom=1 (what search typically uses)
+  // over wiping the cover to null after a probe miss or Google placeholder.
+  const fallback = getStableCoverUrl(coverUrl);
+
+  // If probes only failed due to transport errors, avoid caching the fallback so
+  // a later request can still discover a sharper zoom.
+  if (!sawTransportError) {
+    resolveCache.set(cacheKey, fallback);
+  }
+
+  return fallback;
 }
 
 export async function resolveRelatedBookCovers<
   T extends { coverUrl: string | null },
 >(books: T[], quality: CoverImageQuality): Promise<T[]> {
   const resolved = await Promise.all(
-    books.map(async (book) => ({
-      ...book,
-      coverUrl: await resolveCoverUrl(book.coverUrl, quality),
-    })),
+    books.map(async (book) => {
+      if (!book.coverUrl) {
+        return { ...book, coverUrl: null };
+      }
+
+      const coverUrl = await resolveCoverUrl(book.coverUrl, quality);
+      if (!coverUrl) {
+        return { ...book, coverUrl: null };
+      }
+
+      // Drop carousel entries whose best URL is still a confirmed placeholder.
+      const probe = await probeCoverUrl(coverUrl);
+      if (probe === "unavailable") {
+        return { ...book, coverUrl: null };
+      }
+
+      return { ...book, coverUrl };
+    }),
   );
 
   return resolved.filter((book) => book.coverUrl !== null);

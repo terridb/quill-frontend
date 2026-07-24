@@ -22,6 +22,15 @@ function withZoom(coverUrl: string, zoom: string): string | null {
       return null;
     }
 
+    // Publisher paths + imgtk tokens are fragile in next/image; prefer the
+    // stable /books/content form Google accepts without a token.
+    if (url.pathname.includes("/books/publisher/content")) {
+      url.pathname = url.pathname.replace(
+        "/books/publisher/content",
+        "/books/content",
+      );
+    }
+
     url.searchParams.delete("imgtk");
     url.searchParams.delete("edge");
     url.searchParams.set("zoom", zoom);
@@ -76,6 +85,14 @@ export function toHighQualityCoverUrl(
   quality: CoverImageQuality = "high",
 ): string | null {
   return getCoverUrlCandidates(coverUrl, quality)[0] ?? null;
+}
+
+/**
+ * Stable thumbnail-sized Google cover (zoom=1, no imgtk / publisher path).
+ * Used when sharper zooms are missing or probing fails — matches what search shows.
+ */
+export function getStableCoverUrl(coverUrl: string): string {
+  return withZoom(coverUrl, "1") ?? coverUrl;
 }
 
 /** Portrait book covers are ~2:3; reject strips / tiny placeholders. */

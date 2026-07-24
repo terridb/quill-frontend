@@ -15,6 +15,7 @@ import { getBookByApiId } from "@/src/lib/books/get-book-by-api-id";
 import { mapBookRowToBookDetail } from "@/src/lib/books/map-book-row-to-detail";
 import { mergeRelatedBooks } from "@/src/lib/books/merge-related-books";
 import type { BookExclusion } from "@/src/lib/books/google-books/book-exclusion";
+import { buildBookExclusion } from "@/src/lib/books/google-books/book-exclusion";
 import type { BookKind } from "@/src/lib/books/google-books/book-kind";
 import {
   fetchGoogleBookDetail,
@@ -29,16 +30,6 @@ import {
   resolveRelatedBookCovers,
 } from "@/src/lib/books/google-books/resolve-cover-url";
 import { createClient } from "@/src/lib/supabase/server";
-
-function buildExclusion(apiId: string, isbn: string | null): BookExclusion {
-  const isbns = new Set<string>();
-
-  if (isbn) {
-    isbns.add(isbn.replace(/-/g, "").toUpperCase());
-  }
-
-  return { bookId: apiId, isbns };
-}
 
 function getBookKindFromGenres(genreLabels: string[]): BookKind {
   const fictionGenres = new Set([
@@ -105,6 +96,7 @@ async function fetchAuthorBooksForCatalogRow(
     supabase,
     author,
     excludeApiId: exclusion.bookId,
+    excludeIdentityKey: exclusion.identityKey,
     language,
     maxResults: MAX_AUTHOR_SUPABASE_BOOKS,
   });
@@ -147,7 +139,12 @@ async function fetchBookDetailUncached(apiId: string): Promise<BookDetail> {
     const genreLabels = book.genres ?? [];
     const subjectTags = book.tags ?? [];
     const primaryAuthor = book.author?.split(",")[0]?.trim() ?? null;
-    const exclusion = buildExclusion(book.api_id, book.isbn);
+    const exclusion = buildBookExclusion({
+      bookId: book.api_id,
+      isbn: book.isbn,
+      title: book.title,
+      authors: book.author,
+    });
 
     const [relatedBooks, authorBooks, coverUrl] = await Promise.all([
       fetchRelatedBooksForCatalogRow(supabase, {

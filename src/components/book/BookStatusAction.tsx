@@ -120,6 +120,7 @@ export function BookStatusActionTrigger({ className = "" }: BookStatusActionTrig
           className={mainClassName}
           onClick={openDialog}
           disabled={isDisabled}
+          autoComplete="off"
         >
           {isLoading ? (
             <>
@@ -140,6 +141,7 @@ export function BookStatusActionTrigger({ className = "" }: BookStatusActionTrig
           aria-expanded={isOpen}
           onClick={openDialog}
           disabled={isDisabled}
+          autoComplete="off"
         >
           <ChevronDownIcon className="h-4 w-4" />
           <span className="sr-only">Manage library lists</span>

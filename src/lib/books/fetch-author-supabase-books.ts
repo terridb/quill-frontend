@@ -18,6 +18,8 @@ export interface FetchAuthorSupabaseBooksOptions {
   supabase: TypedSupabaseClient;
   author: string;
   excludeApiId: string;
+  /** Skip other editions of the current work (title + author). */
+  excludeIdentityKey?: string | null;
   language: string | null;
   maxResults?: number;
 }
@@ -125,6 +127,7 @@ export async function fetchAuthorSupabaseBooks({
   supabase,
   author,
   excludeApiId,
+  excludeIdentityKey = null,
   language,
   maxResults = MAX_AUTHOR_BOOKS,
 }: FetchAuthorSupabaseBooksOptions): Promise<RelatedBook[]> {
@@ -146,9 +149,18 @@ export async function fetchAuthorSupabaseBooks({
     return [];
   }
 
-  const matches = data.filter((row) =>
-    relatedBookIncludesAuthor(row.author ?? "", author),
-  );
+  const matches = data.filter((row) => {
+    if (!relatedBookIncludesAuthor(row.author ?? "", author)) {
+      return false;
+    }
+    if (
+      excludeIdentityKey &&
+      bookIdentityKey(row.author ?? "", row.title) === excludeIdentityKey
+    ) {
+      return false;
+    }
+    return true;
+  });
 
   return rankAuthorRows(matches, language, maxResults).map(mapRowToRelatedBook);
 }

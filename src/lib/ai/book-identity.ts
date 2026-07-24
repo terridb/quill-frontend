@@ -1,3 +1,10 @@
+import {
+  compactAuthorName,
+  normalizeAuthorName,
+} from "@/src/lib/books/normalize-author-name";
+
+export { normalizeAuthorName } from "@/src/lib/books/normalize-author-name";
+
 /** Normalize for matching the same work across Google Books editions. */
 export function normalizeBookTitle(title: string): string {
   return title
@@ -9,11 +16,7 @@ export function normalizeBookTitle(title: string): string {
     .trim();
 }
 
-export function normalizeAuthorName(authors: string): string {
-  return authors.toLowerCase().replace(/\s+/g, " ").trim();
-}
-
 /** Stable key so different volume ids of the same title+author can be excluded together. */
 export function bookIdentityKey(authors: string, title: string): string {
-  return `${normalizeAuthorName(authors)}|${normalizeBookTitle(title)}`;
+  return `${compactAuthorName(authors)}|${normalizeBookTitle(title)}`;
 }
