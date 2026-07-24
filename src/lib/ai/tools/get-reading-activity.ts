@@ -70,7 +70,8 @@ export function createGetReadingActivityTool(ctx: AiToolContext) {
         return {
           days,
           logs: logs.map((log) => {
-            const bookId = bookIdByEntryId.get(log.list_entry_id);
+            const entryId = log.list_entry_id;
+            const bookId = entryId ? bookIdByEntryId.get(entryId) : undefined;
             const book = bookId ? bookById.get(bookId) : undefined;
             return {
               loggedDate: log.logged_date,

@@ -11,6 +11,7 @@ import { BookLibraryDialog } from "@/src/components/book/BookLibraryDialog";
 import { CheckIcon, ChevronDownIcon } from "@/src/components/ui/icons";
 import { QuillSpinner } from "@/src/components/ui/QuillSpinner";
 import { useBookLibrary } from "@/src/hooks/use-book-library";
+import { firefoxButtonNoPersistProps } from "@/src/lib/dom/firefox-button-no-persist";
 import { READING_STATUS_LABELS } from "@/src/types/book";
 
 interface BookStatusActionContextValue {
@@ -120,7 +121,7 @@ export function BookStatusActionTrigger({ className = "" }: BookStatusActionTrig
           className={mainClassName}
           onClick={openDialog}
           disabled={isDisabled}
-          autoComplete="off"
+          {...firefoxButtonNoPersistProps}
         >
           {isLoading ? (
             <>
@@ -141,7 +142,7 @@ export function BookStatusActionTrigger({ className = "" }: BookStatusActionTrig
           aria-expanded={isOpen}
           onClick={openDialog}
           disabled={isDisabled}
-          autoComplete="off"
+          {...firefoxButtonNoPersistProps}
         >
           <ChevronDownIcon className="h-4 w-4" />
           <span className="sr-only">Manage library lists</span>
