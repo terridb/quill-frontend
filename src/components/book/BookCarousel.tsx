@@ -46,6 +46,7 @@ function BookCarouselInner({ books }: BookCarouselProps) {
           type="button"
           onClick={() => setPage((current) => current - 1)}
           disabled={activePage === 0}
+          autoComplete="off"
           className="focus-ring shrink-0 rounded-full border border-[var(--color-border)] bg-[var(--color-surface)] p-2 shadow-[var(--shadow-sm)] disabled:opacity-40"
           aria-label="Previous books"
         >
@@ -78,6 +79,7 @@ function BookCarouselInner({ books }: BookCarouselProps) {
           type="button"
           onClick={() => setPage((current) => current + 1)}
           disabled={activePage >= lastPage}
+          autoComplete="off"
           className="focus-ring shrink-0 rounded-full border border-[var(--color-border)] bg-[var(--color-surface)] p-2 shadow-[var(--shadow-sm)] disabled:opacity-40"
           aria-label="Next books"
         >
