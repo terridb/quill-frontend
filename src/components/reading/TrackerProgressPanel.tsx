@@ -2,6 +2,7 @@
 
 import { useEffect, useId, useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { QuillSpinner } from "@/src/components/ui/QuillSpinner";
 import { listKeys } from "@/src/hooks/list-keys";
 import { readingKeys } from "@/src/hooks/reading-keys";
 import {
@@ -28,7 +29,6 @@ async function updateBookStatus(
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       readingStatus,
-      customListIds: [],
     }),
   });
 
@@ -274,9 +274,16 @@ export function TrackerProgressPanel({
         <button
           type="submit"
           disabled={isBusy}
-          className="focus-ring reading-tracker-cta"
+          className="focus-ring reading-tracker-cta inline-flex items-center justify-center gap-2"
         >
-          {updateProgress.isPending ? "Saving…" : "Save progress"}
+          {updateProgress.isPending ? (
+            <>
+              <QuillSpinner size="sm" decorative />
+              Saving…
+            </>
+          ) : (
+            "Save progress"
+          )}
         </button>
         <div className="reading-progress-panel__secondary">
           <button

@@ -25,6 +25,7 @@ type ListEntryRow = {
   list_id: string;
   book_id: string;
   current_page: number | null;
+  page_count?: number | null;
   started_at: string | null;
   finished_at: string | null;
   added_at: string;
@@ -58,6 +59,7 @@ export function mapListEntryRow(data: ListEntryRow): ListEntryWithBook | null {
     listId: data.list_id,
     bookId: data.book_id,
     currentPage: data.current_page,
+    pageCount: data.page_count ?? book.page_count ?? null,
     startedAt: data.started_at,
     finishedAt: data.finished_at,
     addedAt: data.added_at,
@@ -65,6 +67,5 @@ export function mapListEntryRow(data: ListEntryRow): ListEntryWithBook | null {
     title: book.title,
     authors: book.author ?? "Unknown author",
     coverUrl: book.cover_url,
-    pageCount: book.page_count ?? null,
   };
 }

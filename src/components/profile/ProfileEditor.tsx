@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { AvatarPicker } from "@/src/components/profile/AvatarPicker";
+import { QuillSpinner } from "@/src/components/ui/QuillSpinner";
 import {
   getUpdateProfileErrorMessage,
   useUpdateProfile,
@@ -65,9 +66,16 @@ export function ProfileEditor({
           type="button"
           onClick={() => void handleSave()}
           disabled={updateProfile.isPending}
-          className="focus-ring rounded-xl bg-[var(--color-accent)] px-5 py-2.5 text-sm font-medium text-[var(--color-surface)] disabled:opacity-60"
+          className="focus-ring inline-flex items-center justify-center gap-2 rounded-xl bg-[var(--color-accent)] px-5 py-2.5 text-sm font-medium text-[var(--color-surface)] disabled:opacity-60"
         >
-          {updateProfile.isPending ? "Saving…" : "Save changes"}
+          {updateProfile.isPending ? (
+            <>
+              <QuillSpinner size="sm" decorative />
+              Saving…
+            </>
+          ) : (
+            "Save changes"
+          )}
         </button>
         <button
           type="button"

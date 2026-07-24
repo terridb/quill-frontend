@@ -39,6 +39,7 @@ async function fetchCurrentlyReadingEntries(
       list_id,
       book_id,
       current_page,
+      page_count,
       started_at,
       finished_at,
       added_at,
@@ -84,7 +85,7 @@ async function getReadingTrackerUncached(
 
   const todayLogsByEntry = new Map<string, number>();
   for (const log of weekLogs) {
-    if (log.loggedDate === today) {
+    if (log.loggedDate === today && log.listEntryId) {
       todayLogsByEntry.set(log.listEntryId, log.pagesRead);
     }
   }

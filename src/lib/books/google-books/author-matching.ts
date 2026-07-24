@@ -1,12 +1,10 @@
 import type { GoogleBooksVolume } from "@/src/lib/books/google-books/schemas";
+import {
+  authorNamesMatch,
+  normalizeAuthorName,
+} from "@/src/lib/books/normalize-author-name";
 
-export function normalizeAuthorName(name: string): string {
-  return name
-    .toLowerCase()
-    .replace(/\./g, "")
-    .replace(/\s+/g, " ")
-    .trim();
-}
+export { normalizeAuthorName } from "@/src/lib/books/normalize-author-name";
 
 /** Build author search queries from specific name forms to broader variants. */
 export function buildAuthorSearchQueries(author: string): string[] {
@@ -24,7 +22,10 @@ export function buildAuthorSearchQueries(author: string): string[] {
 
   add(`inauthor:"${trimmed}"`);
 
-  const withoutPeriods = trimmed.replace(/(\b[A-Za-z])\.\s*/g, "$1 ").replace(/\s+/g, " ").trim();
+  const withoutPeriods = trimmed
+    .replace(/(\b[A-Za-z])\.\s*/g, "$1 ")
+    .replace(/\s+/g, " ")
+    .trim();
   if (withoutPeriods !== trimmed) {
     add(`inauthor:"${withoutPeriods}"`);
   }
@@ -72,29 +73,7 @@ export function volumeIncludesAuthor(
     return false;
   }
 
-  const target = normalizeAuthorName(author);
-  const significantParts = target.split(" ").filter((part) => part.length > 2);
-  const lastName = significantParts[significantParts.length - 1] ?? "";
-
-  return authors.some((name) => {
-    const candidate = normalizeAuthorName(name);
-
-    if (candidate === target) {
-      return true;
-    }
-
-    if (candidate.includes(target) || target.includes(candidate)) {
-      return true;
-    }
-
-    if (!lastName || !candidate.includes(lastName)) {
-      return false;
-    }
-
-    return significantParts
-      .filter((part) => part !== lastName)
-      .some((part) => candidate.includes(part));
-  });
+  return authors.some((name) => authorNamesMatch(name, author));
 }
 
 export function relatedBookIncludesAuthor(

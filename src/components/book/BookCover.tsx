@@ -4,9 +4,15 @@ export interface BookCoverProps {
   coverUrl: string | null;
   title: string;
   className?: string;
+  priority?: boolean;
 }
 
-export function BookCover({ coverUrl, title, className = "" }: BookCoverProps) {
+export function BookCover({
+  coverUrl,
+  title,
+  className = "",
+  priority = false,
+}: BookCoverProps) {
   return (
     <div
       title={title}
@@ -19,7 +25,8 @@ export function BookCover({ coverUrl, title, className = "" }: BookCoverProps) {
           fill
           sizes="(max-width: 768px) 176px, 288px"
           className="object-cover"
-          priority
+          quality={90}
+          priority={priority}
         />
       ) : (
         <div className="flex h-full items-center justify-center px-2 text-center text-xs leading-tight text-[var(--color-muted)]">

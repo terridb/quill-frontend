@@ -140,35 +140,35 @@ export async function setReadingStatus(
     };
   }
 
-  const deleteIds = currentEntries
-    .filter((entry) => {
-      const list = defaultLists.find((item) => item.id === entry.list_id);
-      if (!list) {
-        return false;
-      }
-      return listNameToReadingStatus(list.name) !== null;
-    })
-    .map((entry) => entry.id);
-
-  if (deleteIds.length > 0) {
-    const { error: deleteError } = await supabase
-      .from("list_entries")
-      .delete()
-      .in("id", deleteIds);
-
-    if (deleteError) {
-      throw new Error("Unable to update reading status");
-    }
-  }
-
-  const { error: insertError } = await supabase.from("list_entries").insert({
-    list_id: targetList.id,
-    book_id: book.id,
-    finished_at: finishedAtTimestamp,
+  const currentDefaultEntry = currentEntries.find((entry) => {
+    const list = defaultLists.find((item) => item.id === entry.list_id);
+    return list ? listNameToReadingStatus(list.name) !== null : false;
   });
 
-  if (insertError) {
-    throw new Error("Unable to update reading status");
+  if (currentDefaultEntry) {
+    // Move in place so reading_logs stay attached to this entry.
+    const { error: moveError } = await supabase
+      .from("list_entries")
+      .update({
+        list_id: targetList.id,
+        finished_at: finishedAtTimestamp,
+      })
+      .eq("id", currentDefaultEntry.id);
+
+    if (moveError) {
+      throw new Error("Unable to update reading status");
+    }
+  } else {
+    const { error: insertError } = await supabase.from("list_entries").insert({
+      list_id: targetList.id,
+      book_id: book.id,
+      page_count: book.pageCount,
+      finished_at: finishedAtTimestamp,
+    });
+
+    if (insertError) {
+      throw new Error("Unable to update reading status");
+    }
   }
 
   return {

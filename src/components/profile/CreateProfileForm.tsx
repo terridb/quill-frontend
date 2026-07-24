@@ -5,6 +5,7 @@ import { AuthCard } from "@/src/components/auth/AuthCard";
 import { AuthField } from "@/src/components/auth/AuthField";
 import { AvatarPicker } from "@/src/components/profile/AvatarPicker";
 import { ProfileWelcome } from "@/src/components/profile/ProfileWelcome";
+import { QuillSpinner } from "@/src/components/ui/QuillSpinner";
 import {
   getUpdateProfileErrorMessage,
   useUpdateProfile,
@@ -103,9 +104,16 @@ export function CreateProfileForm() {
         <button
           type="submit"
           disabled={updateProfile.isPending}
-          className="focus-ring w-full rounded-xl bg-[var(--color-accent)] px-4 py-3 text-sm font-medium text-[var(--color-surface)] disabled:opacity-60"
+          className="focus-ring inline-flex w-full items-center justify-center gap-2 rounded-xl bg-[var(--color-accent)] px-4 py-3 text-sm font-medium text-[var(--color-surface)] disabled:opacity-60"
         >
-          {updateProfile.isPending ? "Saving profile…" : "Save profile"}
+          {updateProfile.isPending ? (
+            <>
+              <QuillSpinner size="sm" decorative />
+              Saving profile…
+            </>
+          ) : (
+            "Save profile"
+          )}
         </button>
       </form>
     </AuthCard>

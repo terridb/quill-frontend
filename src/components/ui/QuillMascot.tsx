@@ -1,6 +1,6 @@
 import Image from "next/image";
 
-export type QuillMascotMood = "happy" | "question" | "oops" | "spinner";
+export type QuillMascotMood = "happy" | "question" | "oops";
 
 export interface QuillMascotProps {
   mood: QuillMascotMood;
@@ -10,13 +10,12 @@ export interface QuillMascotProps {
   label?: string;
 }
 
-const MOODS: QuillMascotMood[] = ["happy", "question", "oops", "spinner"];
+const MOODS: QuillMascotMood[] = ["happy", "question", "oops"];
 
 const MOOD_SRC: Record<QuillMascotMood, string> = {
   happy: "/mascot/quill-happy.png",
   question: "/mascot/quill-question.png",
   oops: "/mascot/quill-oops.png",
-  spinner: "/mascot/quill-spinner.png",
 };
 
 const SIZE_PX = {
@@ -58,7 +57,7 @@ export function QuillMascot({
           height={px}
           className={`quill-mascot-art absolute inset-0 h-full w-full object-contain transition-opacity duration-200 ease-out ${
             m === mood ? "opacity-100" : "opacity-0"
-          } ${m === "spinner" && mood === "spinner" ? "quill-spinner-spin" : ""}`}
+          }`}
           sizes={`${px}px`}
           priority={m === "happy"}
         />

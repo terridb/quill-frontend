@@ -15,6 +15,8 @@ export interface ListEntry {
   listId: string;
   bookId: string;
   currentPage: number | null;
+  /** Edition-specific total; seeded from books.page_count on insert. */
+  pageCount: number | null;
   startedAt: string | null;
   finishedAt: string | null;
   addedAt: string;
@@ -25,7 +27,6 @@ export interface ListEntryWithBook extends ListEntry {
   title: string;
   authors: string;
   coverUrl: string | null;
-  pageCount?: number | null;
 }
 
 export interface ListBook extends RelatedBook {

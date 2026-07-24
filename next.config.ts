@@ -20,6 +20,7 @@ const nextConfig: NextConfig = {
     return [{ source: "/search", destination: "/", permanent: true }];
   },
   images: {
+    qualities: [75, 85, 90],
     remotePatterns: [
       {
         protocol: "https",

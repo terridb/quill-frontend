@@ -24,6 +24,8 @@
 .DS_Store
 *.pem
 .cursor/plans/*
+.cursor/debug-*.log
+/scripts
 
 # debug
 npm-debug.log*

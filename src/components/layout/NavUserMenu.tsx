@@ -5,6 +5,13 @@ import { useEffect, useId, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
 import { signOut } from "@/src/app/auth/actions";
 import { NavAvatar } from "@/src/components/layout/NavAvatar";
+import {
+  BookmarkIcon,
+  ChatMessageIcon,
+  SignOutIcon,
+  UserIcon,
+} from "@/src/components/ui/icons";
+import { QuillSpinner } from "@/src/components/ui/QuillSpinner";
 import { isOutsideElement } from "@/src/lib/dom/safe-event-target";
 import type { Profile } from "@/src/types/profile";
 
@@ -14,6 +21,9 @@ export interface NavUserMenuProps {
   showListsLink?: boolean;
 }
 
+const menuItemClassName =
+  "focus-ring flex items-center gap-2.5 px-4 py-2.5 text-sm text-[var(--color-ink)] transition-colors hover:bg-[var(--color-accent-soft)]";
+
 export function NavUserMenu({ profile, email, showListsLink = false }: NavUserMenuProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [isSigningOut, setIsSigningOut] = useState(false);
@@ -21,6 +31,11 @@ export function NavUserMenu({ profile, email, showListsLink = false }: NavUserMe
   const containerRef = useRef<HTMLDivElement>(null);
   const pathname = usePathname();
   const label = profile?.username || email;
+  const isAiChatActive =
+    pathname === "/ai-chat" || pathname.startsWith("/ai-chat/");
+  const isListsActive = pathname === "/lists" || pathname.startsWith("/lists/");
+  const isProfileActive =
+    pathname === "/profile" || pathname.startsWith("/profile/");
 
   useEffect(() => {
     setIsOpen(false);
@@ -86,9 +101,17 @@ export function NavUserMenu({ profile, email, showListsLink = false }: NavUserMe
                 <Link
                   href="/ai-chat"
                   role="menuitem"
-                  className="focus-ring block px-4 py-2.5 text-sm text-[var(--color-ink)] transition-colors hover:bg-[var(--color-accent-soft)]"
+                  className={menuItemClassName}
                   onClick={() => setIsOpen(false)}
                 >
+                  <ChatMessageIcon
+                    className={`size-4 shrink-0 ${
+                      isAiChatActive
+                        ? "text-[var(--color-accent)]"
+                        : "text-[var(--color-ink-secondary)]"
+                    }`}
+                    filled={isAiChatActive}
+                  />
                   Ask Quill
                 </Link>
               </li>
@@ -96,9 +119,17 @@ export function NavUserMenu({ profile, email, showListsLink = false }: NavUserMe
                 <Link
                   href="/lists"
                   role="menuitem"
-                  className="focus-ring block px-4 py-2.5 text-sm text-[var(--color-ink)] transition-colors hover:bg-[var(--color-accent-soft)]"
+                  className={menuItemClassName}
                   onClick={() => setIsOpen(false)}
                 >
+                  <BookmarkIcon
+                    className={`size-4 shrink-0 ${
+                      isListsActive
+                        ? "text-[var(--color-accent)]"
+                        : "text-[var(--color-ink-secondary)]"
+                    }`}
+                    filled={isListsActive}
+                  />
                   Lists
                 </Link>
               </li>
@@ -108,9 +139,16 @@ export function NavUserMenu({ profile, email, showListsLink = false }: NavUserMe
             <Link
               href="/profile"
               role="menuitem"
-              className="focus-ring block px-4 py-2.5 text-sm text-[var(--color-ink)] transition-colors hover:bg-[var(--color-accent-soft)]"
+              className={menuItemClassName}
               onClick={() => setIsOpen(false)}
             >
+              <UserIcon
+                className={`size-4 shrink-0 ${
+                  isProfileActive
+                    ? "text-[var(--color-accent)]"
+                    : "text-[var(--color-ink-secondary)]"
+                }`}
+              />
               Profile
             </Link>
           </li>
@@ -119,9 +157,14 @@ export function NavUserMenu({ profile, email, showListsLink = false }: NavUserMe
               type="button"
               role="menuitem"
               disabled={isSigningOut}
-              className="focus-ring w-full px-4 py-2.5 text-left text-sm text-[var(--color-ink)] transition-colors hover:bg-[var(--color-accent-soft)] disabled:opacity-60"
+              className={`${menuItemClassName} w-full disabled:opacity-60`}
               onClick={() => void handleSignOut()}
             >
+              {isSigningOut ? (
+                <QuillSpinner size="sm" decorative />
+              ) : (
+                <SignOutIcon className="size-4 shrink-0 text-[var(--color-ink-secondary)]" />
+              )}
               {isSigningOut ? "Signing out…" : "Sign out"}
             </button>
           </li>

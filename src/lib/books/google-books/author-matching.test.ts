@@ -7,6 +7,10 @@ import {
   relatedBookIncludesAuthor,
   volumeIncludesAuthor,
 } from "@/src/lib/books/google-books/author-matching";
+import {
+  authorNamesMatch,
+  compactAuthorName,
+} from "@/src/lib/books/normalize-author-name";
 import type { GoogleBooksVolume } from "@/src/lib/books/google-books/schemas";
 
 function makeVolume(authors: string[]): GoogleBooksVolume {
@@ -24,6 +28,36 @@ describe("author matching", () => {
   it("normalizes author names for comparison", () => {
     expect(normalizeAuthorName("Sarah J. Maas")).toBe("sarah j maas");
     expect(normalizeAuthorName("Sarah J Maas")).toBe("sarah j maas");
+  });
+
+  it("compacts initials so spaced and glued forms share a key", () => {
+    expect(compactAuthorName("J.K. Rowling")).toBe("jkrowling");
+    expect(compactAuthorName("J. K. Rowling")).toBe("jkrowling");
+    expect(compactAuthorName("JK Rowling")).toBe("jkrowling");
+    expect(compactAuthorName("C.S. Lewis")).toBe("cslewis");
+    expect(compactAuthorName("C. S. Lewis")).toBe("cslewis");
+  });
+
+  it("matches common initial spelling variants for any author", () => {
+    const cases: Array<[string, string]> = [
+      ["J.K. Rowling", "J. K. Rowling"],
+      ["J.K. Rowling", "JK Rowling"],
+      ["C.S. Lewis", "C. S. Lewis"],
+      ["T.S. Eliot", "T. S. Eliot"],
+      ["G.R.R. Martin", "G. R. R. Martin"],
+      ["Sarah J. Maas", "Sarah J Maas"],
+    ];
+
+    for (const [left, right] of cases) {
+      expect(authorNamesMatch(left, right)).toBe(true);
+      expect(relatedBookIncludesAuthor(right, left)).toBe(true);
+      expect(volumeIncludesAuthor(makeVolume([right]), left)).toBe(true);
+    }
+  });
+
+  it("does not match different people who share a surname", () => {
+    expect(authorNamesMatch("Mary Rowling", "J.K. Rowling")).toBe(false);
+    expect(authorNamesMatch("Brandon Sanderson", "Sarah J. Maas")).toBe(false);
   });
 
   it("builds multiple author search queries for names with initials", () => {

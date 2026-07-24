@@ -13,9 +13,13 @@ export function NavListsLink() {
       href="/lists"
       aria-label="Your lists"
       aria-current={isActive ? "page" : undefined}
-      className="focus-ring hidden size-9 items-center justify-center rounded-full text-[var(--color-ink-secondary)] transition-colors hover:bg-[var(--color-accent-soft)] hover:text-[var(--color-accent)] md:inline-flex"
+      className={`focus-ring hidden size-9 items-center justify-center rounded-full transition-colors md:inline-flex ${
+        isActive
+          ? "text-[var(--color-accent)]"
+          : "text-[var(--color-ink-secondary)] hover:bg-[var(--color-accent-soft)] hover:text-[var(--color-accent)]"
+      }`}
     >
-      <BookmarkIcon className="size-5" />
+      <BookmarkIcon className="size-5" filled={isActive} />
     </Link>
   );
 }

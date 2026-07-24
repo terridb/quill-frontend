@@ -5,7 +5,7 @@ type TypedSupabaseClient = SupabaseClient<Database>;
 
 export interface ReadingLogRow {
   loggedDate: string;
-  listEntryId: string;
+  listEntryId: string | null;
   pagesRead: number;
 }
 

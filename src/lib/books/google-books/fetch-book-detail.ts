@@ -11,6 +11,10 @@ import {
   mapVolumeToBookDetail,
 } from "@/src/lib/books/google-books/map-volume";
 import { normalizeCategories } from "@/src/lib/books/google-books/normalize-categories";
+import {
+  resolveCoverUrl,
+  resolveRelatedBookCovers,
+} from "@/src/lib/books/google-books/resolve-cover-url";
 import { googleBooksVolumeSchema } from "@/src/lib/books/google-books/schemas";
 
 class BookNotFoundError extends Error {
@@ -68,13 +72,19 @@ async function fetchGoogleBookDetailUncached(bookId: string): Promise<BookDetail
       language,
       sourceBookKind,
       excludeAuthor: primaryAuthor ?? null,
-    }),
+    }).then((books) => resolveRelatedBookCovers(books, "medium")),
     primaryAuthor
-      ? fetchAuthorGoogleBooks(primaryAuthor, exclusion, language)
+      ? fetchAuthorGoogleBooks(primaryAuthor, exclusion, language).then(
+          (books) => resolveRelatedBookCovers(books, "medium"),
+        )
       : Promise.resolve([]),
   ]);
 
-  return mapVolumeToBookDetail(parsed.data, relatedBooks, authorBooks);
+  const detail = mapVolumeToBookDetail(parsed.data, relatedBooks, authorBooks);
+  return {
+    ...detail,
+    coverUrl: await resolveCoverUrl(detail.coverUrl, "high"),
+  };
 }
 
 export const fetchGoogleBookDetail = cache(fetchGoogleBookDetailUncached);

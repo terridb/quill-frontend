@@ -98,6 +98,7 @@ export type Database = {
           finished_at: string | null;
           id: string;
           list_id: string;
+          page_count: number | null;
           started_at: string | null;
         };
         Insert: {
@@ -107,6 +108,7 @@ export type Database = {
           finished_at?: string | null;
           id?: string;
           list_id: string;
+          page_count?: number | null;
           started_at?: string | null;
         };
         Update: {
@@ -116,6 +118,7 @@ export type Database = {
           finished_at?: string | null;
           id?: string;
           list_id?: string;
+          page_count?: number | null;
           started_at?: string | null;
         };
         Relationships: [
@@ -193,7 +196,7 @@ export type Database = {
         Row: {
           created_at: string;
           id: string;
-          list_entry_id: string;
+          list_entry_id: string | null;
           logged_date: string;
           pages_read: number;
           user_id: string;
@@ -201,7 +204,7 @@ export type Database = {
         Insert: {
           created_at?: string;
           id?: string;
-          list_entry_id: string;
+          list_entry_id?: string | null;
           logged_date?: string;
           pages_read?: number;
           user_id: string;
@@ -209,7 +212,7 @@ export type Database = {
         Update: {
           created_at?: string;
           id?: string;
-          list_entry_id?: string;
+          list_entry_id?: string | null;
           logged_date?: string;
           pages_read?: number;
           user_id?: string;

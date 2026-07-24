@@ -23,8 +23,8 @@ export default async function OnboardingLayout({
   }
 
   return (
-    <div className="flex min-h-dvh min-w-0 flex-col bg-[var(--color-bg)]">
-      <header className="border-b border-[var(--color-border)] bg-[var(--color-surface)]/95 backdrop-blur-lg">
+    <div className="flex min-h-dvh min-w-0 flex-col items-center bg-[var(--color-bg)]">
+      <header className="w-full border-b border-[var(--color-border)] bg-[var(--color-surface)]/95 backdrop-blur-lg">
         <div className="mx-auto flex h-[var(--header-height)] max-w-5xl items-center justify-center px-6">
           <Link href="/" className="focus-ring" aria-label="Go to homepage">
             <QuillLogo decorative className="h-10 w-auto text-[var(--color-accent)]" />

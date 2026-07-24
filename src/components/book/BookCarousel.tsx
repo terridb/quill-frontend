@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import type { RelatedBook } from "@/src/types/book";
 import { BookCard } from "@/src/components/book/BookCard";
 import { ChevronLeftIcon, ChevronRightIcon } from "@/src/components/ui/icons";
+import { firefoxButtonNoPersistProps } from "@/src/lib/dom/firefox-button-no-persist";
 
 // Keep page size stable across SSR and hydration. Column count is handled in CSS
 // (.similar-books-page uses 2 cols by default, 4 cols from 40rem).
@@ -46,6 +47,7 @@ function BookCarouselInner({ books }: BookCarouselProps) {
           type="button"
           onClick={() => setPage((current) => current - 1)}
           disabled={activePage === 0}
+          {...firefoxButtonNoPersistProps}
           className="focus-ring shrink-0 rounded-full border border-[var(--color-border)] bg-[var(--color-surface)] p-2 shadow-[var(--shadow-sm)] disabled:opacity-40"
           aria-label="Previous books"
         >
@@ -78,6 +80,7 @@ function BookCarouselInner({ books }: BookCarouselProps) {
           type="button"
           onClick={() => setPage((current) => current + 1)}
           disabled={activePage >= lastPage}
+          {...firefoxButtonNoPersistProps}
           className="focus-ring shrink-0 rounded-full border border-[var(--color-border)] bg-[var(--color-surface)] p-2 shadow-[var(--shadow-sm)] disabled:opacity-40"
           aria-label="Next books"
         >

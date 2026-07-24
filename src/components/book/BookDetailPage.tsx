@@ -26,6 +26,7 @@ export function BookDetailPage({ book }: BookDetailPageProps) {
           <BookCover
             coverUrl={book.coverUrl}
             title={book.title}
+            priority
             className="aspect-[2/3] w-[11rem] shrink-0 md:w-full"
           />
           <BookStatusActionTrigger className="mt-5 hidden shrink-0 md:block" />

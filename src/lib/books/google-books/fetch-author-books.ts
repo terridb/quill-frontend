@@ -10,6 +10,7 @@ import {
   type RecommendableVolumeCriteria,
 } from "@/src/lib/books/google-books/is-recommendable-volume";
 import { mapVolumeToRelatedBook } from "@/src/lib/books/google-books/map-volume";
+import { dedupeRelatedBooks } from "@/src/lib/books/merge-related-books";
 import {
   googleBooksSearchResponseSchema,
   type GoogleBooksVolume,
@@ -126,13 +127,9 @@ export async function fetchAuthorGoogleBooks(
       }
 
       books.push(mapVolumeToRelatedBook(volume));
-
-      if (books.length >= maxResults) {
-        break;
-      }
     }
 
-    return books.filter((book) => book.bookId !== exclusion.bookId);
+    return dedupeRelatedBooks(books).slice(0, maxResults);
   } catch {
     return [];
   }

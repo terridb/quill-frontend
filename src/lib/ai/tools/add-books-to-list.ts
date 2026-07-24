@@ -92,6 +92,7 @@ export function createAddBooksToListTool(ctx: AiToolContext) {
           const { error } = await ctx.supabase.from("list_entries").insert({
             list_id: list.id,
             book_id: book.id,
+            page_count: book.pageCount,
           });
 
           if (error) {

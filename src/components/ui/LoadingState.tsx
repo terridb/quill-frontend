@@ -1,3 +1,5 @@
+import { QuillSpinner } from "@/src/components/ui/QuillSpinner";
+
 export interface LoadingStateProps {
   variant?: "spinner" | "skeleton";
   rowCount?: number;
@@ -27,11 +29,11 @@ export function LoadingState({
 
   return (
     <div
-      className={`flex items-center justify-center py-12 ${className}`}
+      className={`flex items-center justify-center py-8 ${className}`}
       aria-busy="true"
       aria-live="polite"
     >
-      <div className="h-6 w-6 animate-spin rounded-full border-2 border-[var(--color-border)] border-t-[var(--color-accent)]" />
+      <QuillSpinner />
     </div>
   );
 }
